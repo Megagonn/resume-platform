@@ -13,8 +13,11 @@ export default function SeekerProfile() {
   const [location, setLocation] = useState('');
   const [skills, setSkills] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeName, setResumeName] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,37 @@ export default function SeekerProfile() {
     );
     setLoading(false);
   }, [user]);
+
+  const onAvatarFile = async (file: File | null) => {
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    setError('');
+    try {
+      const res = await mockApi.uploadImage(file);
+      setAvatarUrl(res.file.url);
+      setMessage('Photo uploaded — save profile to keep it.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Photo upload failed');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const onResumeFile = async (file: File | null) => {
+    if (!file || !user) return;
+    setUploadingResume(true);
+    setError('');
+    try {
+      const res = await mockApi.uploadDocument(file);
+      setResumeUrl(res.file.url);
+      setResumeName(file.name);
+      setMessage('CV uploaded — save profile to keep it.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'CV upload failed');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -80,21 +114,25 @@ export default function SeekerProfile() {
       <form onSubmit={onSubmit} className="mx-auto max-w-2xl space-y-6">
         <Card className="space-y-4">
           <h2 className="font-semibold">Account</h2>
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-primary-50 text-lg font-semibold text-primary">
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50 text-xl font-semibold text-primary">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
               ) : (
                 name.charAt(0)?.toUpperCase() || '?'
               )}
             </div>
-            <Input
-              label="Avatar URL"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://…"
-              className="flex-1"
-            />
+            <div className="min-w-0 flex-1 space-y-2">
+              <span className="text-sm font-medium text-ink-muted">Profile photo</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                onChange={(e) => onAvatarFile(e.target.files?.[0] || null)}
+                disabled={uploadingAvatar}
+              />
+              {uploadingAvatar && <p className="text-xs text-ink-muted">Uploading photo…</p>}
+            </div>
           </div>
           <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} required />
           <Input label="Email" value={user?.email || ''} disabled />
@@ -116,11 +154,30 @@ export default function SeekerProfile() {
             value={skills}
             onChange={(e) => setSkills(e.target.value)}
           />
-          <Input
-            label="Resume URL"
-            value={resumeUrl}
-            onChange={(e) => setResumeUrl(e.target.value)}
-          />
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-ink-muted">Resume / CV (optional)</span>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+              onChange={(e) => onResumeFile(e.target.files?.[0] || null)}
+              disabled={uploadingResume}
+            />
+            {uploadingResume && <p className="text-xs text-ink-muted">Uploading CV…</p>}
+            {resumeUrl && (
+              <p className="text-sm">
+                Current:{' '}
+                <a
+                  href={resumeUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-primary underline"
+                >
+                  {resumeName || 'View CV'}
+                </a>
+              </p>
+            )}
+          </div>
           <Input
             label="Years of experience"
             type="number"
@@ -132,7 +189,7 @@ export default function SeekerProfile() {
 
         {message && <p className="text-sm text-emerald-700">{message}</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={saving}>
+        <Button type="submit" disabled={saving || uploadingAvatar || uploadingResume}>
           {saving ? 'Saving…' : 'Save profile'}
         </Button>
       </form>

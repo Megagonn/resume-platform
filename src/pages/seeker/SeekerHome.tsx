@@ -139,11 +139,24 @@ export default function SeekerHome() {
           ) : (
             <ul className="space-y-3">
               {orders.slice(0, 4).map((o) => (
-                <li key={o.id} className="flex items-center justify-between gap-2 text-sm">
+                <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span>
                     {o.package?.name} · {formatNaira(o.amount)}
                   </span>
-                  <Badge tone={statusTone(o.status)}>{statusLabel(o.status)}</Badge>
+                  <div className="flex items-center gap-2">
+                    {o.status === 'delivered' && o.deliveryFileUrl && (
+                      <a
+                        href={o.deliveryFileUrl}
+                        download={o.deliveryFileName || 'ready-brand-cv.pdf'}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-primary underline"
+                      >
+                        Download
+                      </a>
+                    )}
+                    <Badge tone={statusTone(o.status)}>{statusLabel(o.status)}</Badge>
+                  </div>
                 </li>
               ))}
             </ul>

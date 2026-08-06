@@ -20,6 +20,8 @@ export default function HirerCompany() {
   const [loadError, setLoadError] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingCompany, setSavingCompany] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [accountMsg, setAccountMsg] = useState('');
   const [companyMsg, setCompanyMsg] = useState('');
   const [accountErr, setAccountErr] = useState('');
@@ -52,6 +54,36 @@ export default function HirerCompany() {
       })
       .finally(() => setLoading(false));
   }, [user]);
+
+  const onAvatarFile = async (file: File | null) => {
+    if (!file) return;
+    setUploadingAvatar(true);
+    setAccountErr('');
+    try {
+      const res = await mockApi.uploadImage(file);
+      setAvatarUrl(res.file.url);
+      setAccountMsg('Photo uploaded — save account to keep it.');
+    } catch (err) {
+      setAccountErr(err instanceof Error ? err.message : 'Photo upload failed');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const onLogoFile = async (file: File | null) => {
+    if (!file) return;
+    setUploadingLogo(true);
+    setCompanyErr('');
+    try {
+      const res = await mockApi.uploadImage(file);
+      setLogo(res.file.url);
+      setCompanyMsg('Logo uploaded — save company to keep it.');
+    } catch (err) {
+      setCompanyErr(err instanceof Error ? err.message : 'Logo upload failed');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const onSaveAccount = async (e: FormEvent) => {
     e.preventDefault();
@@ -124,19 +156,25 @@ export default function HirerCompany() {
         <form onSubmit={onSaveAccount} className="space-y-4">
           <Card className="space-y-4">
             <h2 className="font-semibold">Your account</h2>
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-primary-50 font-semibold text-primary">
+            <div className="flex flex-wrap items-start gap-3">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-50 font-semibold text-primary">
                 {avatarUrl ? (
                   <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
                   accountName.charAt(0)?.toUpperCase() || '?'
                 )}
               </div>
-              <Input
-                label="Avatar URL"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-              />
+              <div className="min-w-0 flex-1 space-y-2">
+                <span className="text-sm font-medium text-ink-muted">Profile photo</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/gif"
+                  className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                  onChange={(e) => onAvatarFile(e.target.files?.[0] || null)}
+                  disabled={uploadingAvatar}
+                />
+                {uploadingAvatar && <p className="text-xs text-ink-muted">Uploading…</p>}
+              </div>
             </div>
             <Input
               label="Full name"
@@ -148,7 +186,7 @@ export default function HirerCompany() {
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
             {accountMsg && <p className="text-sm text-emerald-700">{accountMsg}</p>}
             {accountErr && <p className="text-sm text-red-600">{accountErr}</p>}
-            <Button type="submit" disabled={savingAccount}>
+            <Button type="submit" disabled={savingAccount || uploadingAvatar}>
               {savingAccount ? 'Saving…' : 'Save account'}
             </Button>
           </Card>
@@ -168,7 +206,24 @@ export default function HirerCompany() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <Input label="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-ink-muted">Company logo</span>
+              {logo && (
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="h-16 w-16 rounded-xl border border-border object-cover"
+                />
+              )}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                onChange={(e) => onLogoFile(e.target.files?.[0] || null)}
+                disabled={uploadingLogo}
+              />
+              {uploadingLogo && <p className="text-xs text-ink-muted">Uploading logo…</p>}
+            </div>
             <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
             <Input
               label="Location"
@@ -178,7 +233,7 @@ export default function HirerCompany() {
             <Textarea label="About" value={about} onChange={(e) => setAbout(e.target.value)} />
             {companyMsg && <p className="text-sm text-emerald-700">{companyMsg}</p>}
             {companyErr && <p className="text-sm text-red-600">{companyErr}</p>}
-            <Button type="submit" disabled={savingCompany}>
+            <Button type="submit" disabled={savingCompany || uploadingLogo}>
               {savingCompany ? 'Saving…' : 'Save company'}
             </Button>
           </Card>

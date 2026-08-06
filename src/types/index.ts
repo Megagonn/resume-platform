@@ -142,7 +142,15 @@ export interface Order {
   status: OrderStatus;
   paymentRef?: string;
   notes?: string;
+  /** Optional file the seeker uploaded at checkout (current CV, brief, etc.) */
+  attachmentFileUrl?: string;
+  attachmentFileName?: string;
+  /** Optional fulfillment note from admin */
   deliverables?: string;
+  /** Downloadable completed CV / package file */
+  deliveryFileUrl?: string;
+  deliveryFileName?: string;
+  deliveredAt?: string;
   createdAt: string;
   package?: CvPackage;
   seeker?: User;

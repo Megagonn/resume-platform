@@ -33,7 +33,7 @@ import {
   redactApplications,
 } from './entitlements';
 
-const STORAGE_KEY = 'ready-brand-mock-db-v4';
+const STORAGE_KEY = 'ready-brand-mock-db-v5';
 const AUTH_KEY = 'ready-brand-auth';
 
 interface MockDb {
@@ -338,11 +338,31 @@ export const mockApi = {
     return this.getSubscription(hirerId);
   },
 
-  async createOrder(seekerId: string, packageId: string, notes?: string, markPaid = true) {
+  async createOrder(
+    seekerId: string,
+    packageId: string,
+    options?: {
+      notes?: string;
+      markPaid?: boolean;
+      attachmentFileUrl?: string;
+      attachmentFileName?: string;
+      file?: File;
+    }
+  ) {
     await delay();
     const db = loadDb();
     const pkg = db.packages.find((p) => p.id === packageId || p.slug === packageId);
     if (!pkg || !pkg.active) throw new Error('Package not found');
+
+    let attachmentFileUrl = options?.attachmentFileUrl;
+    let attachmentFileName = options?.attachmentFileName;
+    if (options?.file) {
+      const uploaded = await this.uploadDocument(options.file);
+      attachmentFileUrl = uploaded.file.url;
+      attachmentFileName = options.file.name;
+    }
+
+    const markPaid = options?.markPaid !== false;
     const order: Order = {
       id: id('ord'),
       seekerId,
@@ -351,7 +371,9 @@ export const mockApi = {
       currency: pkg.currency,
       status: markPaid ? 'paid' : 'pending',
       paymentRef: markPaid ? `mock_${Date.now()}` : undefined,
-      notes,
+      notes: options?.notes,
+      attachmentFileUrl,
+      attachmentFileName,
       createdAt: new Date().toISOString(),
     };
     db.orders.unshift(order);
@@ -375,7 +397,7 @@ export const mockApi = {
   async applyToJob(
     jobId: string,
     seekerId: string,
-    data: { coverNote?: string; resumeUrl?: string }
+    data: { coverNote?: string; resumeUrl?: string; resumeFile?: File }
   ) {
     await delay();
     const db = loadDb();
@@ -384,12 +406,19 @@ export const mockApi = {
     if (db.applications.some((a) => a.jobId === jobId && a.seekerId === seekerId)) {
       throw new Error('Already applied to this job');
     }
+
+    let resumeUrl = data.resumeUrl;
+    if (data.resumeFile) {
+      const uploaded = await this.uploadDocument(data.resumeFile);
+      resumeUrl = uploaded.file.url;
+    }
+
     const application: Application = {
       id: id('app'),
       jobId,
       seekerId,
       coverNote: data.coverNote,
-      resumeUrl: data.resumeUrl,
+      resumeUrl,
       status: 'new',
       timeline: [{ status: 'new', at: new Date().toISOString() }],
       createdAt: new Date().toISOString(),
@@ -687,7 +716,13 @@ export const mockApi = {
 
   async adminUpdateOrder(
     orderId: string,
-    data: { status: OrderStatus; deliverables?: string; notes?: string }
+    data: {
+      status: OrderStatus;
+      deliverables?: string;
+      notes?: string;
+      deliveryFileUrl?: string;
+      deliveryFileName?: string;
+    }
   ) {
     await delay();
     const db = loadDb();
@@ -696,6 +731,11 @@ export const mockApi = {
     order.status = data.status;
     if (data.deliverables !== undefined) order.deliverables = data.deliverables;
     if (data.notes !== undefined) order.notes = data.notes;
+    if (data.deliveryFileUrl !== undefined) order.deliveryFileUrl = data.deliveryFileUrl;
+    if (data.deliveryFileName !== undefined) order.deliveryFileName = data.deliveryFileName;
+    if (data.status === 'delivered') {
+      order.deliveredAt = order.deliveredAt || new Date().toISOString();
+    }
     saveDb(db);
     return {
       order: {
@@ -704,6 +744,60 @@ export const mockApi = {
         seeker: stripPassword(db.users.find((u) => u.id === order.seekerId)!),
       },
     };
+  },
+
+  async adminDeliverOrder(
+    orderId: string,
+    data: { file?: File; deliverables?: string; notes?: string }
+  ) {
+    await delay(400);
+    const db = loadDb();
+    const order = db.orders.find((o) => o.id === orderId);
+    if (!order) throw new Error('Order not found');
+
+    if (data.file) {
+      const uploaded = await this.uploadDocument(data.file);
+      order.deliveryFileUrl = uploaded.file.url;
+      order.deliveryFileName = data.file.name;
+    }
+    if (!order.deliveryFileUrl) {
+      throw new Error('Upload a CV file to deliver this order');
+    }
+    if (data.deliverables !== undefined) order.deliverables = data.deliverables;
+    if (data.notes !== undefined) order.notes = data.notes;
+    order.status = 'delivered';
+    order.deliveredAt = new Date().toISOString();
+    saveDb(db);
+    return {
+      order: {
+        ...order,
+        package: db.packages.find((p) => p.id === order.packageId),
+        seeker: stripPassword(db.users.find((u) => u.id === order.seekerId)!),
+      },
+      message: 'Order delivered',
+    };
+  },
+
+  async uploadDocument(file: File) {
+    await delay(200);
+    const allowed = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|doc|docx)$/i)) {
+      throw new Error('Please upload a PDF or Word document');
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('File must be under 10MB');
+    }
+    const url = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+    return { file: { url, originalName: file.name } };
   },
 
   async adminCreatePackage(data: Omit<CvPackage, 'id'>) {

@@ -359,7 +359,10 @@ export const orders: Order[] = [
     currency: 'NGN',
     status: 'delivered',
     paymentRef: 'mock_1002',
-    deliverables: 'CV + cover letter delivered via email',
+    deliverables: 'CV + cover letter',
+    deliveryFileUrl: '/samples/sample-cv.pdf',
+    deliveryFileName: 'Tunde-Balogun-CV.pdf',
+    deliveredAt: '2025-12-22T12:00:00.000Z',
     createdAt: '2025-12-20T12:00:00.000Z',
   },
 ];

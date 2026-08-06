@@ -44,35 +44,36 @@ export default function LandingPage() {
         <img
           src="/images/hero-career.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover animate-fade-in"
+          className="absolute inset-0 h-full w-full object-cover object-[72%_center] animate-fade-in md:object-[78%_center]"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2a1520]/92 via-[#3d1e2e]/72 to-[#3d1e2e]/35" />
+        {/* Full vignette + strong left scrim so copy stays readable */}
+        <div className="absolute inset-0 bg-[#1a0f14]/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a0f14] via-[#1a0f14]/92 to-transparent md:w-[68%]" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#1a0f14]/80 to-transparent md:hidden" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-20">
           <div className="max-w-xl animate-fade-up">
-            <p className="font-display text-5xl leading-[1.02] text-white sm:text-6xl md:text-7xl">
+            <p className="font-display text-5xl leading-[1.02] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl">
               The Ready Brand
             </p>
-            <h1 className="mt-5 text-xl font-medium text-white/95 sm:text-2xl leading-snug">
+            <h1 className="mt-5 text-xl font-semibold text-white sm:text-2xl leading-snug drop-shadow-sm">
               Career-ready CVs, and the jobs that deserve them.
             </h1>
-            <p className="mt-4 max-w-md text-base text-white/75 leading-relaxed">
+            <p className="mt-4 max-w-md text-base font-medium text-white/90 leading-relaxed">
               Professional rewriting and a hiring marketplace — built for candidates and companies
               who want clarity.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/services">
-                <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-lg">
-                  Order a CV package <ArrowRight size={18} />
-                </Button>
+              <Link
+                to="/services"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-[#5D2E46] shadow-lg transition hover:bg-white/95"
+              >
+                Order a CV package <ArrowRight size={18} />
               </Link>
-              <Link to="/jobs">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white/40 text-white hover:bg-white/10"
-                >
-                  Browse jobs
-                </Button>
+              <Link
+                to="/jobs"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/80 bg-black/20 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/15"
+              >
+                Browse jobs
               </Link>
             </div>
           </div>
@@ -107,37 +108,43 @@ export default function LandingPage() {
         <img
           src="/images/section-workplace.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover object-[60%_center] md:object-[68%_center]"
         />
-        <div className="absolute inset-0 bg-[#2a1520]/78" />
+        {/* Match main hero: full vignette + left scrim for readable copy */}
+        <div className="absolute inset-0 bg-[#1a0f14]/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a0f14] via-[#1a0f14]/90 to-[#1a0f14]/45" />
+        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-[#1a0f14]/70 to-transparent md:hidden" />
         <div className="relative mx-auto max-w-6xl px-4 py-20">
           <div className="max-w-xl">
-            <h2 className="font-display text-3xl text-white md:text-4xl">For employers</h2>
-            <p className="mt-3 text-white/75">
+            <h2 className="font-display text-3xl text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] md:text-4xl">
+              For employers
+            </h2>
+            <p className="mt-3 font-medium text-white/95 drop-shadow-sm">
               Post openings on Free, unlock unlimited roles and featured listings with Premium, or
               ask us for a Custom plan.
             </p>
           </div>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {hirerPlans.map((plan) => (
-              <div key={plan.id} className="border-t border-white/25 pt-6">
-                <h3 className="font-semibold text-white">{plan.name}</h3>
-                <p className="mt-1 font-display text-2xl text-[#E8C4C8]">
+              <div key={plan.id} className="border-t border-white/40 pt-6">
+                <h3 className="font-semibold text-white drop-shadow-sm">{plan.name}</h3>
+                <p className="mt-1 font-display text-2xl text-[#F3D6DB] drop-shadow-sm">
                   {plan.price === null
                     ? 'Custom'
                     : plan.price === 0
                       ? 'Free'
                       : `${formatNaira(plan.price)}/mo`}
                 </p>
-                <p className="mt-2 text-sm text-white/70">{plan.description}</p>
+                <p className="mt-2 text-sm font-medium text-white/90">{plan.description}</p>
               </div>
             ))}
           </div>
           <div className="mt-10">
-            <Link to="/auth/signup">
-              <Button className="bg-white text-primary hover:bg-white/90">
-                Hire on The Ready Brand <ArrowRight size={16} />
-              </Button>
+            <Link
+              to="/auth/signup"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#5D2E46] shadow-lg transition hover:bg-white/95"
+            >
+              Hire on The Ready Brand <ArrowRight size={16} />
             </Link>
           </div>
         </div>

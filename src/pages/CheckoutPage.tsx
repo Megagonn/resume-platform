@@ -12,6 +12,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const [pkg, setPkg] = useState<CvPackage | null>(null);
   const [notes, setNotes] = useState('');
+  const [attachment, setAttachment] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -39,7 +40,11 @@ export default function CheckoutPage() {
     setSubmitting(true);
     setError('');
     try {
-      await mockApi.createOrder(user.id, pkg!.id, notes, true);
+      await mockApi.createOrder(user.id, pkg!.id, {
+        notes,
+        markPaid: true,
+        file: attachment || undefined,
+      });
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Checkout failed');
@@ -67,7 +72,8 @@ export default function CheckoutPage() {
           <p className="font-display text-3xl text-primary">Order placed</p>
           <p className="mt-3 text-ink-muted">
             Payment is simulated. Your {pkg.name} order is marked paid and will appear in your
-            dashboard.
+            dashboard
+            {attachment ? ', including your uploaded attachment for the writer.' : '.'}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link to="/seeker/orders">
@@ -89,7 +95,7 @@ export default function CheckoutPage() {
       </Link>
       <form
         onSubmit={onSubmit}
-        className="mt-6 rounded-3xl border border-border bg-white p-8 shadow-soft space-y-5"
+        className="mt-6 space-y-5 rounded-3xl border border-border bg-white p-8 shadow-soft"
       >
         <h1 className="font-display text-3xl text-ink">Checkout</h1>
         <div className="rounded-2xl bg-surface-muted p-4">
@@ -103,7 +109,29 @@ export default function CheckoutPage() {
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Target role, tone, achievements to highlight…"
         />
-        <Input label="Card number (demo)" placeholder="4242 4242 4242 4242" defaultValue="4242 4242 4242 4242" />
+        <label className="block space-y-1.5">
+          <span className="text-sm font-medium text-ink-muted">
+            Attachment (optional)
+          </span>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+            onChange={(e) => setAttachment(e.target.files?.[0] || null)}
+          />
+          <p className="text-xs text-ink-muted">
+            Upload your current CV or a brief (PDF / Word). Writers will use this as a starting
+            point.
+          </p>
+          {attachment && (
+            <p className="text-sm text-primary">Selected: {attachment.name}</p>
+          )}
+        </label>
+        <Input
+          label="Card number (demo)"
+          placeholder="4242 4242 4242 4242"
+          defaultValue="4242 4242 4242 4242"
+        />
         <div className="grid grid-cols-2 gap-3">
           <Input label="Expiry" placeholder="12/28" defaultValue="12/28" />
           <Input label="CVC" placeholder="123" defaultValue="123" />

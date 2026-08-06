@@ -5,7 +5,7 @@ import type { Job } from '../types';
 import { mockApi } from '../lib/mockApi';
 import { formatDate, formatNaira, jobTypeLabel } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
-import { Badge, Button, Spinner, Textarea, Input } from '../components/ui';
+import { Badge, Button, Spinner, Textarea } from '../components/ui';
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +15,7 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showApply, setShowApply] = useState(false);
   const [coverNote, setCoverNote] = useState('');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeUrl, setResumeUrl] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -30,6 +31,12 @@ export default function JobDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if (user?.role === 'seeker' && user.seekerProfile?.resumeUrl) {
+      setResumeUrl(user.seekerProfile.resumeUrl);
+    }
+  }, [user]);
+
   const onApply = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -40,12 +47,21 @@ export default function JobDetailPage() {
       setError('Only job seekers can apply.');
       return;
     }
+    if (!resumeFile && !resumeUrl) {
+      setError('Upload a CV or ensure one is saved on your profile.');
+      return;
+    }
     setSubmitting(true);
     setError('');
     try {
-      await mockApi.applyToJob(id!, user.id, { coverNote, resumeUrl });
+      await mockApi.applyToJob(id!, user.id, {
+        coverNote,
+        resumeUrl: resumeFile ? undefined : resumeUrl || undefined,
+        resumeFile: resumeFile || undefined,
+      });
       setSuccess('Application submitted.');
       setShowApply(false);
+      setResumeFile(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to apply');
     } finally {
@@ -104,7 +120,7 @@ export default function JobDetailPage() {
           </div>
         )}
         {success && <p className="mt-6 text-sm font-medium text-emerald-700">{success}</p>}
-        {error && <p className="mt-6 text-sm text-red-600">{error}</p>}
+        {error && !showApply && <p className="mt-6 text-sm text-red-600">{error}</p>}
         <div className="mt-8">
           {!showApply ? (
             <Button
@@ -123,12 +139,31 @@ export default function JobDetailPage() {
                 onChange={(e) => setCoverNote(e.target.value)}
                 required
               />
-              <Input
-                label="Resume URL"
-                placeholder="https://…"
-                value={resumeUrl}
-                onChange={(e) => setResumeUrl(e.target.value)}
-              />
+              <label className="block space-y-1.5">
+                <span className="text-sm font-medium text-ink-muted">CV / resume</span>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                  onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                />
+                {resumeFile ? (
+                  <p className="text-sm text-primary">Selected: {resumeFile.name}</p>
+                ) : resumeUrl ? (
+                  <p className="text-xs text-ink-muted">
+                    Using CV from your profile.{' '}
+                    <a href={resumeUrl} target="_blank" rel="noreferrer" className="text-primary underline">
+                      Preview
+                    </a>{' '}
+                    — or upload a different file above.
+                  </p>
+                ) : (
+                  <p className="text-xs text-ink-muted">
+                    Upload a PDF or Word CV for this application.
+                  </p>
+                )}
+              </label>
+              {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-2">
                 <Button type="submit" disabled={submitting}>
                   {submitting ? 'Submitting…' : 'Submit application'}
