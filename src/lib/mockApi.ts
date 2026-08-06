@@ -14,6 +14,7 @@ import type {
   HirerPlanSlug,
   CompanySubscription,
   SubscriptionStatus,
+  BlogPost,
 } from '../types';
 import {
   users as seedUsers,
@@ -23,6 +24,7 @@ import {
   packages as seedPackages,
   orders as seedOrders,
   hirerPlans as seedHirerPlans,
+  blogPosts as seedBlogPosts,
 } from '../data/fixtures';
 import {
   resolveEntitlements,
@@ -31,7 +33,7 @@ import {
   redactApplications,
 } from './entitlements';
 
-const STORAGE_KEY = 'ready-brand-mock-db-v2';
+const STORAGE_KEY = 'ready-brand-mock-db-v3';
 const AUTH_KEY = 'ready-brand-auth';
 
 interface MockDb {
@@ -42,6 +44,7 @@ interface MockDb {
   packages: CvPackage[];
   orders: Order[];
   hirerPlans: HirerPlan[];
+  blogPosts: BlogPost[];
 }
 
 function delay(ms = 280) {
@@ -50,6 +53,7 @@ function delay(ms = 280) {
 
 function migrateDb(db: MockDb): MockDb {
   if (!db.hirerPlans?.length) db.hirerPlans = structuredClone(seedHirerPlans);
+  if (!db.blogPosts?.length) db.blogPosts = structuredClone(seedBlogPosts);
   db.companies = db.companies.map((c) => ({
     ...c,
     subscription: c.subscription || defaultFreeSubscription(),
@@ -78,6 +82,7 @@ function loadDb(): MockDb {
     packages: structuredClone(seedPackages),
     orders: structuredClone(seedOrders),
     hirerPlans: structuredClone(seedHirerPlans),
+    blogPosts: structuredClone(seedBlogPosts),
   };
   saveDb(db);
   return db;
@@ -417,6 +422,34 @@ export const mockApi = {
       setStoredAuth({ ...auth, user: stripPassword(user) });
     }
     return { user: stripPassword(user) };
+  },
+
+  async updateHirerAccount(
+    userId: string,
+    data: { name?: string; phone?: string; avatarUrl?: string }
+  ) {
+    await delay();
+    const db = loadDb();
+    const user = db.users.find((u) => u.id === userId && u.role === 'hirer');
+    if (!user) throw new Error('User not found');
+    if (data.name) user.name = data.name;
+    if (data.phone !== undefined) user.phone = data.phone;
+    if (data.avatarUrl !== undefined) user.avatarUrl = data.avatarUrl;
+    saveDb(db);
+    const auth = getStoredAuth();
+    if (auth?.user.id === userId) {
+      setStoredAuth({ ...auth, user: stripPassword(user) });
+    }
+    return { user: stripPassword(user) };
+  },
+
+  async getHirerAccount(hirerId: string) {
+    await delay();
+    const db = loadDb();
+    const user = db.users.find((u) => u.id === hirerId);
+    if (!user) throw new Error('User not found');
+    const company = db.companies.find((c) => c.hirerId === hirerId);
+    return { user: stripPassword(user), company };
   },
 
   async getCompany(hirerId: string) {
@@ -761,6 +794,108 @@ export const mockApi = {
     Object.assign(plan, data);
     saveDb(db);
     return { plan };
+  },
+
+  async listBlogPosts(publishedOnly = true, q?: string) {
+    await delay();
+    const db = loadDb();
+    let list = db.blogPosts.map((p) => ({
+      ...p,
+      author: stripPassword(db.users.find((u) => u.id === p.authorId)!),
+    }));
+    if (publishedOnly) list = list.filter((p) => p.published);
+    if (q) {
+      const query = q.toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.title.toLowerCase().includes(query) ||
+          p.excerpt.toLowerCase().includes(query) ||
+          p.content.toLowerCase().includes(query)
+      );
+    }
+    return {
+      posts: list.sort((a, b) =>
+        (b.publishedAt || b.createdAt).localeCompare(a.publishedAt || a.createdAt)
+      ),
+    };
+  },
+
+  async getBlogPost(slug: string, allowUnpublished = false) {
+    await delay();
+    const db = loadDb();
+    const post = db.blogPosts.find(
+      (p) => p.slug === slug && (allowUnpublished || p.published)
+    );
+    if (!post) throw new Error('Post not found');
+    return {
+      post: {
+        ...post,
+        author: stripPassword(db.users.find((u) => u.id === post.authorId)!),
+      },
+    };
+  },
+
+  async adminListBlogPosts() {
+    return this.listBlogPosts(false);
+  },
+
+  async adminCreateBlogPost(
+    authorId: string,
+    data: Omit<BlogPost, 'id' | 'authorId' | 'createdAt' | 'updatedAt' | 'author'>
+  ) {
+    await delay();
+    const db = loadDb();
+    const now = new Date().toISOString();
+    const slug =
+      data.slug ||
+      data.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    if (db.blogPosts.some((p) => p.slug === slug)) {
+      throw new Error('Slug already exists');
+    }
+    const post: BlogPost = {
+      ...data,
+      id: id('blog'),
+      slug,
+      authorId,
+      publishedAt: data.published ? now : undefined,
+      createdAt: now,
+      updatedAt: now,
+    };
+    db.blogPosts.unshift(post);
+    saveDb(db);
+    return { post };
+  },
+
+  async adminUpdateBlogPost(postId: string, data: Partial<BlogPost>) {
+    await delay();
+    const db = loadDb();
+    const post = db.blogPosts.find((p) => p.id === postId);
+    if (!post) throw new Error('Post not found');
+    const wasPublished = post.published;
+    Object.assign(post, data);
+    post.updatedAt = new Date().toISOString();
+    if (post.published && !wasPublished) {
+      post.publishedAt = new Date().toISOString();
+    }
+    if (!post.published) {
+      post.publishedAt = undefined;
+    }
+    saveDb(db);
+    return { post };
+  },
+
+  async adminDeleteBlogPost(postId: string) {
+    await delay();
+    const db = loadDb();
+    const idx = db.blogPosts.findIndex((p) => p.id === postId);
+    if (idx < 0) throw new Error('Post not found');
+    db.blogPosts.splice(idx, 1);
+    saveDb(db);
+    return { message: 'Post deleted' };
   },
 
   resetDemoData() {

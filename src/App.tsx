@@ -8,6 +8,9 @@ import JobsPage from './pages/JobsPage';
 import JobDetailPage from './pages/JobDetailPage';
 import ServicesPage from './pages/ServicesPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PricingPage from './pages/PricingPage';
+import BlogPage from './pages/BlogPage';
+import BlogPostPage from './pages/BlogPostPage';
 import SeekerHome from './pages/seeker/SeekerHome';
 import SeekerApplications from './pages/seeker/SeekerApplications';
 import SeekerOrders from './pages/seeker/SeekerOrders';
@@ -25,6 +28,7 @@ import AdminApplications from './pages/admin/AdminApplications';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminPackages from './pages/admin/AdminPackages';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
+import AdminBlog from './pages/admin/AdminBlog';
 
 export default function App() {
   return (
@@ -39,6 +43,9 @@ export default function App() {
             <Route path="jobs/:id" element={<JobDetailPage />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="services/checkout/:packageId" element={<CheckoutPage />} />
+            <Route path="pricing" element={<PricingPage />} />
+            <Route path="blog" element={<BlogPage />} />
+            <Route path="blog/:slug" element={<BlogPostPage />} />
           </Route>
 
           <Route path="seeker" element={<ProtectedLayout role="seeker" />}>
@@ -65,6 +72,7 @@ export default function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="packages" element={<AdminPackages />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="blog" element={<AdminBlog />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

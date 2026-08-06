@@ -6,6 +6,7 @@ import type {
   CvPackage,
   Order,
   HirerPlan,
+  BlogPost,
 } from '../types';
 
 export const hirerPlans: HirerPlan[] = [
@@ -360,5 +361,47 @@ export const orders: Order[] = [
     paymentRef: 'mock_1002',
     deliverables: 'CV + cover letter delivered via email',
     createdAt: '2025-12-20T12:00:00.000Z',
+  },
+];
+
+export const blogPosts: BlogPost[] = [
+  {
+    id: 'blog-1',
+    title: 'How to write a CV that gets past ATS',
+    slug: 'cv-that-gets-past-ats',
+    excerpt:
+      'Simple formatting and keyword habits that help your resume survive screening software.',
+    content:
+      'Applicant tracking systems reward clarity.\n\nUse standard section headings, mirror language from the job description, and keep layouts simple. Avoid tables and text boxes when possible.\n\nLead with outcomes — numbers, scope, and tools — instead of task lists. Then tailor the top third of your CV for each role you care about.',
+    authorId: 'user-admin',
+    published: true,
+    publishedAt: '2026-02-01T10:00:00.000Z',
+    createdAt: '2026-02-01T10:00:00.000Z',
+    updatedAt: '2026-02-01T10:00:00.000Z',
+  },
+  {
+    id: 'blog-2',
+    title: 'Hiring on The Ready Brand: Free vs Premium',
+    slug: 'hiring-free-vs-premium',
+    excerpt:
+      'When one open role is enough — and when unlimited listings and full applicant access pay off.',
+    content:
+      'Free is ideal for a single opening and a first look at applicants.\n\nPremium unlocks unlimited open jobs, featured placement on the board, and the full applicant pipeline including resumes and phone numbers.\n\nCustom plans are for high-volume teams that need negotiated limits — talk to us and we will set it up.',
+    authorId: 'user-admin',
+    published: true,
+    publishedAt: '2026-03-10T09:00:00.000Z',
+    createdAt: '2026-03-10T09:00:00.000Z',
+    updatedAt: '2026-03-10T09:00:00.000Z',
+  },
+  {
+    id: 'blog-3',
+    title: 'Draft: Interview follow-up templates',
+    slug: 'interview-follow-up-templates',
+    excerpt: 'Coming soon — polite, specific notes that keep you top of mind.',
+    content: 'Draft content for admin review.',
+    authorId: 'user-admin',
+    published: false,
+    createdAt: '2026-04-01T08:00:00.000Z',
+    updatedAt: '2026-04-01T08:00:00.000Z',
   },
 ];

@@ -152,11 +152,49 @@ export function Spinner() {
   );
 }
 
+export function Card({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        'rounded-2xl border border-border bg-white p-6 shadow-sm shadow-primary/5',
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function StatCard({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+}) {
+  return (
+    <Card className="p-5">
+      <p className="text-sm text-ink-muted">{label}</p>
+      <p className="mt-1 font-display text-3xl text-primary">{value}</p>
+      {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
+    </Card>
+  );
+}
+
 export function statusTone(
   status: string
 ): 'neutral' | 'success' | 'warn' | 'danger' | 'brand' {
-  if (['open', 'hired', 'delivered', 'shortlisted', 'paid'].includes(status)) return 'success';
-  if (['reviewing', 'in_progress', 'pending', 'new'].includes(status)) return 'warn';
-  if (['closed', 'rejected', 'cancelled', 'draft'].includes(status)) return 'danger';
+  if (['open', 'hired', 'delivered', 'shortlisted', 'paid', 'published'].includes(status))
+    return 'success';
+  if (['reviewing', 'in_progress', 'pending', 'new', 'draft'].includes(status)) return 'warn';
+  if (['closed', 'rejected', 'cancelled'].includes(status)) return 'danger';
   return 'brand';
 }

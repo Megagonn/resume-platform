@@ -200,6 +200,12 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-6 text-sm">
+            <Link to="/blog" className="text-ink-muted hover:text-primary">
+              Blog
+            </Link>
+            <Link to="/pricing" className="text-ink-muted hover:text-primary">
+              Pricing
+            </Link>
             <Link to="/jobs" className="text-ink-muted hover:text-primary">
               Jobs
             </Link>

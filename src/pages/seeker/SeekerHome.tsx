@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mockApi } from '../../lib/mockApi';
 import { formatNaira, statusLabel } from '../../lib/utils';
-import { Badge, Button, PageHeader, Spinner, statusTone } from '../../components/ui';
+import { Badge, Button, Card, PageHeader, Spinner, StatCard, statusTone } from '../../components/ui';
+import { ChartCard, SimpleAreaChart, SimplePieChart } from '../../components/Charts';
 import type { Application, Order } from '../../types';
 
 export default function SeekerHome() {
@@ -19,11 +20,46 @@ export default function SeekerHome() {
       mockApi.listSeekerOrders(user.id),
     ])
       .then(([a, o]) => {
-        setApps(a.applications.slice(0, 3));
-        setOrders(o.orders.slice(0, 3));
+        setApps(a.applications);
+        setOrders(o.orders);
       })
       .finally(() => setLoading(false));
   }, [user]);
+
+  const appStatusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    apps.forEach((a) => {
+      counts[a.status] = (counts[a.status] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name: statusLabel(name), value }));
+  }, [apps]);
+
+  const trendData = useMemo(() => {
+    const combined = [
+      ...apps.map((a) => ({ at: a.createdAt, type: 'app' as const })),
+      ...orders.map((o) => ({ at: o.createdAt, type: 'order' as const })),
+    ].sort((a, b) => a.at.localeCompare(b.at));
+
+    if (combined.length === 0) {
+      return [
+        { name: 'Week 1', activity: 0 },
+        { name: 'Week 2', activity: 0 },
+        { name: 'Week 3', activity: 0 },
+        { name: 'Week 4', activity: 0 },
+      ];
+    }
+
+    let running = 0;
+    const buckets = ['W1', 'W2', 'W3', 'W4'];
+    return buckets.map((name, i) => {
+      const slice = combined.slice(
+        Math.floor((i * combined.length) / 4),
+        Math.floor(((i + 1) * combined.length) / 4)
+      );
+      running += slice.length;
+      return { name, activity: running };
+    });
+  }, [apps, orders]);
 
   if (loading) return <Spinner />;
 
@@ -31,7 +67,7 @@ export default function SeekerHome() {
     <div>
       <PageHeader
         title={`Hello, ${user?.name.split(' ')[0]}`}
-        subtitle="Track applications and CV service orders."
+        subtitle="Your applications, CV orders, and momentum at a glance."
         actions={
           <>
             <Link to="/jobs">
@@ -45,8 +81,33 @@ export default function SeekerHome() {
           </>
         }
       />
+
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <StatCard label="Applications" value={apps.length} />
+        <StatCard label="CV orders" value={orders.length} />
+        <StatCard
+          label="In progress"
+          value={orders.filter((o) => ['paid', 'in_progress'].includes(o.status)).length}
+        />
+      </div>
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
+        <ChartCard title="Activity" subtitle="Applications & orders over recent weeks">
+          <SimpleAreaChart data={trendData} dataKey="activity" />
+        </ChartCard>
+        <ChartCard title="Application pipeline" subtitle="Status mix">
+          {appStatusData.length === 0 ? (
+            <p className="flex h-full items-center justify-center text-sm text-ink-muted">
+              Apply to a job to see this chart.
+            </p>
+          ) : (
+            <SimplePieChart data={appStatusData} />
+          )}
+        </ChartCard>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-border bg-white p-6">
+        <Card>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold">Recent applications</h2>
             <Link to="/seeker/applications" className="text-sm text-primary">
@@ -57,7 +118,7 @@ export default function SeekerHome() {
             <p className="text-sm text-ink-muted">No applications yet.</p>
           ) : (
             <ul className="space-y-3">
-              {apps.map((a) => (
+              {apps.slice(0, 4).map((a) => (
                 <li key={a.id} className="flex items-center justify-between gap-2 text-sm">
                   <span className="font-medium">{a.job?.title}</span>
                   <Badge tone={statusTone(a.status)}>{statusLabel(a.status)}</Badge>
@@ -65,8 +126,8 @@ export default function SeekerHome() {
               ))}
             </ul>
           )}
-        </section>
-        <section className="rounded-2xl border border-border bg-white p-6">
+        </Card>
+        <Card>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold">CV orders</h2>
             <Link to="/seeker/orders" className="text-sm text-primary">
@@ -77,7 +138,7 @@ export default function SeekerHome() {
             <p className="text-sm text-ink-muted">No orders yet.</p>
           ) : (
             <ul className="space-y-3">
-              {orders.map((o) => (
+              {orders.slice(0, 4).map((o) => (
                 <li key={o.id} className="flex items-center justify-between gap-2 text-sm">
                   <span>
                     {o.package?.name} · {formatNaira(o.amount)}
@@ -87,7 +148,7 @@ export default function SeekerHome() {
               ))}
             </ul>
           )}
-        </section>
+        </Card>
       </div>
     </div>
   );

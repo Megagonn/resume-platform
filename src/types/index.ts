@@ -167,3 +167,18 @@ export interface SubscriptionUsage {
   openJobs: number;
   entitlements: PlanEntitlements;
 }
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  authorId: string;
+  published: boolean;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  author?: User;
+}
