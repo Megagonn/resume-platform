@@ -1,46 +1,49 @@
-# Getting Started with Create React App
+# The Ready Brand — Web App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Vite + React + TypeScript + Tailwind frontend for **The Ready Brand** job marketplace and CV service orders.
 
-## Available Scripts
+## Run
 
-In the project directory, you can run:
+```bash
+npm install
+npm run dev
+```
 
-### `npm start`
+App: `http://localhost:5173`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Demo accounts (mock data)
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+| Role | Email | Password |
+|------|-------|----------|
+| Seeker | ada@example.com | password |
+| Hirer | hiring@novatech.ng | password |
+| Admin | admin@thereadybrand.com | Admin123! |
 
-### `npm test`
+Data persists in `localStorage` (`ready-brand-mock-db`). Clear site data to reset fixtures.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Stack
 
-### `npm run build`
+- React Router for public + role dashboards
+- `src/lib/mockApi.ts` mirrors the Express API shape
+- Types in `src/types/` align with `resume-platform-api`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Backend (separate project)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Sibling repo: `../resume-platform-api`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd ../resume-platform-api
+cp .env.example .env
+npm install
+npm run dev
+```
 
-### `npm run eject`
+### Future wiring
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+When connecting the real API, set:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```env
+VITE_API_URL=http://localhost:4000/api
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Then replace `mockApi` calls with `fetch(`${import.meta.env.VITE_API_URL}/...`)` and send `Authorization: Bearer <token>`.

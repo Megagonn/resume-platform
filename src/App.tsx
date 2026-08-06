@@ -1,41 +1,75 @@
-import { useState, useEffect } from 'react';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Packages from './components/Packages';
-import Footer from './components/Footer';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { PublicLayout, ProtectedLayout } from './components/Layout';
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
+import JobsPage from './pages/JobsPage';
+import JobDetailPage from './pages/JobDetailPage';
+import ServicesPage from './pages/ServicesPage';
+import CheckoutPage from './pages/CheckoutPage';
+import SeekerHome from './pages/seeker/SeekerHome';
+import SeekerApplications from './pages/seeker/SeekerApplications';
+import SeekerOrders from './pages/seeker/SeekerOrders';
+import SeekerProfile from './pages/seeker/SeekerProfile';
+import HirerHome from './pages/hirer/HirerHome';
+import HirerJobs from './pages/hirer/HirerJobs';
+import HirerJobNew from './pages/hirer/HirerJobNew';
+import HirerJobDetail from './pages/hirer/HirerJobDetail';
+import HirerCompany from './pages/hirer/HirerCompany';
+import HirerBilling from './pages/hirer/HirerBilling';
+import AdminHome from './pages/admin/AdminHome';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminJobs from './pages/admin/AdminJobs';
+import AdminApplications from './pages/admin/AdminApplications';
+import AdminOrders from './pages/admin/AdminOrders';
+import AdminPackages from './pages/admin/AdminPackages';
+import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 
-function App() {
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    // Check system preference
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(isDark);
-    
-    // Check localStorage
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode !== null) {
-      setDarkMode(savedMode === 'true');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkMode', darkMode.toString());
-  }, [darkMode]);
-
+export default function App() {
   return (
-    <div className="min-h-screen">
-      <Hero darkMode={darkMode} setDarkMode={setDarkMode} />
-      <Features />
-      <Packages />
-      <Footer />
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route index element={<LandingPage />} />
+            <Route path="auth/login" element={<LoginPage />} />
+            <Route path="auth/signup" element={<SignupPage />} />
+            <Route path="jobs" element={<JobsPage />} />
+            <Route path="jobs/:id" element={<JobDetailPage />} />
+            <Route path="services" element={<ServicesPage />} />
+            <Route path="services/checkout/:packageId" element={<CheckoutPage />} />
+          </Route>
+
+          <Route path="seeker" element={<ProtectedLayout role="seeker" />}>
+            <Route index element={<SeekerHome />} />
+            <Route path="applications" element={<SeekerApplications />} />
+            <Route path="orders" element={<SeekerOrders />} />
+            <Route path="profile" element={<SeekerProfile />} />
+          </Route>
+
+          <Route path="hirer" element={<ProtectedLayout role="hirer" />}>
+            <Route index element={<HirerHome />} />
+            <Route path="jobs" element={<HirerJobs />} />
+            <Route path="jobs/new" element={<HirerJobNew />} />
+            <Route path="jobs/:id" element={<HirerJobDetail />} />
+            <Route path="company" element={<HirerCompany />} />
+            <Route path="billing" element={<HirerBilling />} />
+          </Route>
+
+          <Route path="admin" element={<ProtectedLayout role="admin" />}>
+            <Route index element={<AdminHome />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="jobs" element={<AdminJobs />} />
+            <Route path="applications" element={<AdminApplications />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="packages" element={<AdminPackages />} />
+            <Route path="subscriptions" element={<AdminSubscriptions />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;
