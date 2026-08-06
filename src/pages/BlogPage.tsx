@@ -41,18 +41,35 @@ export default function BlogPage() {
             <Link
               key={post.id}
               to={`/blog/${post.slug}`}
-              className="group rounded-2xl border border-border bg-white p-6 transition hover:border-primary/30 hover:shadow-soft animate-fade-up"
+              className="group overflow-hidden rounded-2xl border border-border bg-white transition hover:border-primary/30 hover:shadow-soft animate-fade-up"
               style={{ animationDelay: `${i * 40}ms` }}
             >
-              <p className="text-xs uppercase tracking-wide text-ink-muted">
-                {post.publishedAt ? formatDate(post.publishedAt) : formatDate(post.createdAt)}
-                {post.author?.name ? ` · ${post.author.name}` : ''}
-              </p>
-              <h2 className="mt-2 text-xl font-semibold text-ink group-hover:text-primary">
-                {post.title}
-              </h2>
-              <p className="mt-2 line-clamp-3 text-sm text-ink-muted">{post.excerpt}</p>
-              <span className="mt-4 inline-block text-sm font-medium text-primary">Read more →</span>
+              <div className="aspect-[16/9] overflow-hidden bg-surface-muted">
+                {post.coverImage ? (
+                  <img
+                    src={post.coverImage}
+                    alt=""
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center bg-primary-50 text-sm text-primary">
+                    The Ready Brand
+                  </div>
+                )}
+              </div>
+              <div className="p-6">
+                <p className="text-xs uppercase tracking-wide text-ink-muted">
+                  {post.publishedAt ? formatDate(post.publishedAt) : formatDate(post.createdAt)}
+                  {post.author?.name ? ` · ${post.author.name}` : ''}
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-ink group-hover:text-primary">
+                  {post.title}
+                </h2>
+                <p className="mt-2 line-clamp-3 text-sm text-ink-muted">{post.excerpt}</p>
+                <span className="mt-4 inline-block text-sm font-medium text-primary">
+                  Read more →
+                </span>
+              </div>
             </Link>
           ))}
         </div>

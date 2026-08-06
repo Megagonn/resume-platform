@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate } from '../../lib/utils';
@@ -25,11 +25,13 @@ const emptyForm = {
 
 export default function AdminBlog() {
   const { user } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
 
   const load = async () => {
@@ -63,6 +65,22 @@ export default function AdminBlog() {
     setEditingId(null);
     setForm(emptyForm);
     setMessage('');
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const onUploadCover = async (file: File | null) => {
+    if (!file) return;
+    setUploading(true);
+    setMessage('');
+    try {
+      const res = await mockApi.uploadImage(file);
+      setForm((f) => ({ ...f, coverImage: res.file.url }));
+      setMessage('Cover image uploaded.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const onSubmit = async (e: FormEvent) => {
@@ -114,36 +132,38 @@ export default function AdminBlog() {
             <EmptyState title="No posts" description="Create your first article." />
           ) : (
             posts.map((p) => (
-              <div
-                key={p.id}
-                className="rounded-2xl border border-border bg-white p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="font-semibold">{p.title}</p>
-                    <p className="text-xs text-ink-muted">
-                      /{p.slug} · {formatDate(p.updatedAt)}
-                    </p>
+              <div key={p.id} className="overflow-hidden rounded-2xl border border-border bg-white">
+                {p.coverImage && (
+                  <img src={p.coverImage} alt="" className="h-28 w-full object-cover" />
+                )}
+                <div className="p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">{p.title}</p>
+                      <p className="text-xs text-ink-muted">
+                        /{p.slug} · {formatDate(p.updatedAt)}
+                      </p>
+                    </div>
+                    <Badge tone={statusTone(p.published ? 'published' : 'draft')}>
+                      {p.published ? 'Published' : 'Draft'}
+                    </Badge>
                   </div>
-                  <Badge tone={statusTone(p.published ? 'published' : 'draft')}>
-                    {p.published ? 'Published' : 'Draft'}
-                  </Badge>
-                </div>
-                <div className="mt-3 flex gap-3 text-sm">
-                  <button
-                    type="button"
-                    className="font-medium text-primary"
-                    onClick={() => startEdit(p)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="font-medium text-red-600"
-                    onClick={() => onDelete(p.id)}
-                  >
-                    Delete
-                  </button>
+                  <div className="mt-3 flex gap-3 text-sm">
+                    <button
+                      type="button"
+                      className="font-medium text-primary"
+                      onClick={() => startEdit(p)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="font-medium text-red-600"
+                      onClick={() => onDelete(p.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -179,11 +199,37 @@ export default function AdminBlog() {
             value={form.content}
             onChange={(e) => setForm({ ...form, content: e.target.value })}
           />
-          <Input
-            label="Cover image URL"
-            value={form.coverImage}
-            onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
-          />
+
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-ink-muted">Cover image</span>
+            {form.coverImage ? (
+              <img
+                src={form.coverImage}
+                alt="Cover preview"
+                className="h-40 w-full rounded-xl object-cover border border-border"
+              />
+            ) : (
+              <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-border bg-surface-muted text-sm text-ink-muted">
+                No cover yet
+              </div>
+            )}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="block w-full text-sm text-ink-muted file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+              onChange={(e) => onUploadCover(e.target.files?.[0] || null)}
+              disabled={uploading}
+            />
+            <Input
+              label="Or paste image URL"
+              value={form.coverImage.startsWith('data:') ? '' : form.coverImage}
+              onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
+              placeholder="/images/… or https://…"
+            />
+            {uploading && <p className="text-sm text-ink-muted">Uploading…</p>}
+          </div>
+
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -193,7 +239,7 @@ export default function AdminBlog() {
             Publish publicly
           </label>
           {message && <p className="text-sm text-primary">{message}</p>}
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" disabled={saving || uploading}>
             {saving ? 'Saving…' : editingId ? 'Update post' : 'Create post'}
           </Button>
         </form>

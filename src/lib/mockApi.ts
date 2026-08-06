@@ -33,7 +33,7 @@ import {
   redactApplications,
 } from './entitlements';
 
-const STORAGE_KEY = 'ready-brand-mock-db-v3';
+const STORAGE_KEY = 'ready-brand-mock-db-v4';
 const AUTH_KEY = 'ready-brand-auth';
 
 interface MockDb {
@@ -54,6 +54,16 @@ function delay(ms = 280) {
 function migrateDb(db: MockDb): MockDb {
   if (!db.hirerPlans?.length) db.hirerPlans = structuredClone(seedHirerPlans);
   if (!db.blogPosts?.length) db.blogPosts = structuredClone(seedBlogPosts);
+  else {
+    // Backfill stock covers when missing
+    const covers: Record<string, string> = {
+      'cv-that-gets-past-ats': '/images/blog-ats-cv.jpg',
+      'hiring-free-vs-premium': '/images/blog-hiring-plans.jpg',
+    };
+    db.blogPosts = db.blogPosts.map((p) =>
+      p.coverImage ? p : { ...p, coverImage: covers[p.slug] }
+    );
+  }
   db.companies = db.companies.map((c) => ({
     ...c,
     subscription: c.subscription || defaultFreeSubscription(),
@@ -896,6 +906,23 @@ export const mockApi = {
     db.blogPosts.splice(idx, 1);
     saveDb(db);
     return { message: 'Post deleted' };
+  },
+
+  async uploadImage(file: File) {
+    await delay(200);
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Please choose an image file');
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      throw new Error('Image must be under 4MB');
+    }
+    const url = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Failed to read image'));
+      reader.readAsDataURL(file);
+    });
+    return { file: { url, originalName: file.name } };
   },
 
   resetDemoData() {

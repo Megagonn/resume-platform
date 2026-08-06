@@ -373,6 +373,7 @@ export const blogPosts: BlogPost[] = [
       'Simple formatting and keyword habits that help your resume survive screening software.',
     content:
       'Applicant tracking systems reward clarity.\n\nUse standard section headings, mirror language from the job description, and keep layouts simple. Avoid tables and text boxes when possible.\n\nLead with outcomes — numbers, scope, and tools — instead of task lists. Then tailor the top third of your CV for each role you care about.',
+    coverImage: '/images/blog-ats-cv.jpg',
     authorId: 'user-admin',
     published: true,
     publishedAt: '2026-02-01T10:00:00.000Z',
@@ -387,6 +388,7 @@ export const blogPosts: BlogPost[] = [
       'When one open role is enough — and when unlimited listings and full applicant access pay off.',
     content:
       'Free is ideal for a single opening and a first look at applicants.\n\nPremium unlocks unlimited open jobs, featured placement on the board, and the full applicant pipeline including resumes and phone numbers.\n\nCustom plans are for high-volume teams that need negotiated limits — talk to us and we will set it up.',
+    coverImage: '/images/blog-hiring-plans.jpg',
     authorId: 'user-admin',
     published: true,
     publishedAt: '2026-03-10T09:00:00.000Z',

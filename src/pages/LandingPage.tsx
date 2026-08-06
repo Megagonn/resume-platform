@@ -40,53 +40,40 @@ const features = [
 export default function LandingPage() {
   return (
     <div>
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-hero-mesh pointer-events-none" />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-20 md:grid-cols-2 md:items-center md:py-28">
-          <div className="animate-fade-up">
-            <p className="font-display text-4xl text-primary sm:text-5xl md:text-6xl leading-[1.05]">
+      <section className="relative isolate min-h-[88vh] overflow-hidden">
+        <img
+          src="/images/hero-career.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover animate-fade-in"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2a1520]/92 via-[#3d1e2e]/72 to-[#3d1e2e]/35" />
+        <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-20">
+          <div className="max-w-xl animate-fade-up">
+            <p className="font-display text-5xl leading-[1.02] text-white sm:text-6xl md:text-7xl">
               The Ready Brand
             </p>
-            <h1 className="mt-6 text-2xl font-semibold text-ink sm:text-3xl leading-snug max-w-lg">
+            <h1 className="mt-5 text-xl font-medium text-white/95 sm:text-2xl leading-snug">
               Career-ready CVs, and the jobs that deserve them.
             </h1>
-            <p className="mt-4 max-w-md text-ink-muted leading-relaxed">
-              Order professional CV rewriting, then apply to openings from companies hiring on
-              our marketplace — all in one place.
+            <p className="mt-4 max-w-md text-base text-white/75 leading-relaxed">
+              Professional rewriting and a hiring marketplace — built for candidates and companies
+              who want clarity.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/services">
-                <Button size="lg">
+                <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-lg">
                   Order a CV package <ArrowRight size={18} />
                 </Button>
               </Link>
               <Link to="/jobs">
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white/40 text-white hover:bg-white/10"
+                >
                   Browse jobs
                 </Button>
               </Link>
-            </div>
-          </div>
-          <div className="relative animate-fade-up animation-delay-150">
-            <div className="aspect-[4/5] max-h-[480px] overflow-hidden rounded-3xl bg-primary shadow-2xl shadow-primary/30">
-              <div className="flex h-full flex-col justify-between p-8 text-white">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-white/60">Since day one</p>
-                  <p className="mt-4 font-display text-4xl leading-tight">
-                    Look ready.
-                    <br />
-                    Get hired.
-                  </p>
-                </div>
-                <div className="space-y-3 text-sm text-white/80">
-                  <p className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                    ATS formatting · LinkedIn polish · Cover letters
-                  </p>
-                  <p className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                    Hirers post roles · Seekers apply with confidence
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -116,39 +103,47 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-20">
-        <div className="max-w-xl">
-          <h2 className="font-display text-3xl text-ink md:text-4xl">For employers</h2>
-          <p className="mt-3 text-ink-muted">
-            Post openings on Free, unlock unlimited roles and featured listings with Premium, or
-            ask us for a Custom plan.
-          </p>
-        </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {hirerPlans.map((plan) => (
-            <div key={plan.id} className="border-t border-border pt-6">
-              <h3 className="font-semibold text-ink">{plan.name}</h3>
-              <p className="mt-1 font-display text-2xl text-primary">
-                {plan.price === null
-                  ? 'Custom'
-                  : plan.price === 0
-                    ? 'Free'
-                    : `${formatNaira(plan.price)}/mo`}
-              </p>
-              <p className="mt-2 text-sm text-ink-muted">{plan.description}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8">
-          <Link to="/auth/signup">
-            <Button variant="outline">
-              Hire on The Ready Brand <ArrowRight size={16} />
-            </Button>
-          </Link>
+      <section className="relative isolate overflow-hidden border-y border-border">
+        <img
+          src="/images/section-workplace.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[#2a1520]/78" />
+        <div className="relative mx-auto max-w-6xl px-4 py-20">
+          <div className="max-w-xl">
+            <h2 className="font-display text-3xl text-white md:text-4xl">For employers</h2>
+            <p className="mt-3 text-white/75">
+              Post openings on Free, unlock unlimited roles and featured listings with Premium, or
+              ask us for a Custom plan.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-8 md:grid-cols-3">
+            {hirerPlans.map((plan) => (
+              <div key={plan.id} className="border-t border-white/25 pt-6">
+                <h3 className="font-semibold text-white">{plan.name}</h3>
+                <p className="mt-1 font-display text-2xl text-[#E8C4C8]">
+                  {plan.price === null
+                    ? 'Custom'
+                    : plan.price === 0
+                      ? 'Free'
+                      : `${formatNaira(plan.price)}/mo`}
+                </p>
+                <p className="mt-2 text-sm text-white/70">{plan.description}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10">
+            <Link to="/auth/signup">
+              <Button className="bg-white text-primary hover:bg-white/90">
+                Hire on The Ready Brand <ArrowRight size={16} />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section id="packages" className="border-y border-border bg-surface-muted/40 py-20">
+      <section id="packages" className="bg-surface-muted/40 py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="text-center">
             <h2 className="font-display text-3xl text-ink md:text-4xl">CV packages</h2>
@@ -159,9 +154,7 @@ export default function LandingPage() {
               <div
                 key={pkg.id}
                 className={`relative rounded-3xl border bg-white p-8 ${
-                  pkg.popular
-                    ? 'border-primary shadow-soft scale-[1.02]'
-                    : 'border-border'
+                  pkg.popular ? 'border-primary shadow-soft scale-[1.02]' : 'border-border'
                 }`}
               >
                 {pkg.popular && (
