@@ -80,6 +80,21 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="border-b border-border bg-white/70">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
+          {[
+            { value: 'ATS-ready', label: 'CVs written for screening systems' },
+            { value: '12–48h', label: 'Typical package turnaround' },
+            { value: 'Hire + rewrite', label: 'Jobs and services in one place' },
+          ].map((item) => (
+            <div key={item.label} className="text-center sm:text-left">
+              <p className="font-display text-2xl text-primary">{item.value}</p>
+              <p className="mt-1 text-sm text-ink-muted">{item.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl px-4 py-20">
         <div className="max-w-xl">
           <h2 className="font-display text-3xl text-ink md:text-4xl">Why professionals choose us</h2>
@@ -91,7 +106,7 @@ export default function LandingPage() {
           {features.map((f, i) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-border bg-white p-6 transition hover:-translate-y-1 hover:shadow-soft animate-fade-up"
+              className="rounded-2xl border border-border bg-white p-6 transition hover:-translate-y-1 hover:border-primary/20 hover:shadow-lift animate-fade-up"
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary">
@@ -160,8 +175,8 @@ export default function LandingPage() {
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
-                className={`relative rounded-3xl border bg-white p-8 ${
-                  pkg.popular ? 'border-primary shadow-soft scale-[1.02]' : 'border-border'
+                className={`relative rounded-3xl border bg-white p-8 transition hover:-translate-y-1 ${
+                  pkg.popular ? 'border-primary shadow-lift scale-[1.02]' : 'border-border hover:shadow-soft'
                 }`}
               >
                 {pkg.popular && (
@@ -191,41 +206,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-border py-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:flex-row md:justify-between">
-          <div>
-            <p className="font-display text-xl text-primary">The Ready Brand</p>
-            <p className="mt-2 max-w-sm text-sm text-ink-muted">
-              Professional CV writing and a job marketplace for candidates and hirers.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-6 text-sm">
-            <Link to="/blog" className="text-ink-muted hover:text-primary">
-              Blog
-            </Link>
-            <Link to="/pricing" className="text-ink-muted hover:text-primary">
-              Pricing
-            </Link>
-            <Link to="/jobs" className="text-ink-muted hover:text-primary">
-              Jobs
-            </Link>
-            <Link to="/services" className="text-ink-muted hover:text-primary">
-              Services
-            </Link>
-            <a
-              href="https://wa.me/2347064641892"
-              target="_blank"
-              rel="noreferrer"
-              className="text-ink-muted hover:text-primary"
-            >
-              WhatsApp
-            </a>
-            <a href="mailto:hannah.cvwriter@gmail.com" className="text-ink-muted hover:text-primary">
-              Email
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -142,7 +142,7 @@ export default function AdminOrders() {
 
       <div className="space-y-3">
         {orders.map((o) => (
-          <div key={o.id} className="rounded-2xl border border-border bg-white p-5">
+          <div key={o.id} className="rounded-2xl border border-border bg-white p-5 shadow-sm shadow-primary/5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="font-semibold">

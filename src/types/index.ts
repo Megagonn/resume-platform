@@ -190,3 +190,32 @@ export interface BlogPost {
   updatedAt: string;
   author?: User;
 }
+
+export interface AdminUserStats {
+  applications: number;
+  orders: number;
+  jobsPosted: number;
+  openJobs: number;
+  hired: number;
+}
+
+export interface AdminUserRow extends User {
+  stats: AdminUserStats;
+  company?: Company;
+}
+
+export interface AdminJobRow extends Job {
+  applicationCount: number;
+  hirer?: User;
+}
+
+export interface AdminPackageStats {
+  orders: number;
+  revenue: number;
+  pending: number;
+  delivered: number;
+}
+
+export interface AdminPackageRow extends CvPackage {
+  stats: AdminPackageStats;
+}

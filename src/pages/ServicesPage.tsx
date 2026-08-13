@@ -30,8 +30,8 @@ export default function ServicesPage() {
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`rounded-3xl border bg-white p-8 ${
-                pkg.popular ? 'border-primary shadow-soft' : 'border-border'
+              className={`rounded-3xl border bg-white p-8 transition hover:-translate-y-1 ${
+                pkg.popular ? 'border-primary shadow-lift' : 'border-border hover:shadow-soft'
               }`}
             >
               {pkg.popular && (

@@ -660,7 +660,71 @@ export const mockApi = {
     await delay();
     const db = loadDb();
     return {
-      users: db.users.map(stripPassword).sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      users: db.users
+        .map((u) => {
+          const company = db.companies.find((c) => c.hirerId === u.id);
+          return {
+            ...stripPassword(u),
+            company,
+            stats: {
+              applications: db.applications.filter((a) => a.seekerId === u.id).length,
+              orders: db.orders.filter((o) => o.seekerId === u.id).length,
+              jobsPosted: db.jobs.filter((j) => j.hirerId === u.id).length,
+              openJobs: db.jobs.filter((j) => j.hirerId === u.id && j.status === 'open').length,
+              hired: db.applications.filter((a) => a.seekerId === u.id && a.status === 'hired')
+                .length,
+            },
+          };
+        })
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    };
+  },
+
+  async adminUserDetail(userId: string) {
+    await delay();
+    const db = loadDb();
+    const user = db.users.find((u) => u.id === userId);
+    if (!user) throw new Error('User not found');
+    const company = db.companies.find((c) => c.hirerId === userId);
+    const applications = db.applications
+      .filter((a) => a.seekerId === userId)
+      .map((a) => ({
+        ...a,
+        job: (() => {
+          const job = db.jobs.find((j) => j.id === a.jobId);
+          return job ? withCompany(job, db) : undefined;
+        })(),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const orders = db.orders
+      .filter((o) => o.seekerId === userId)
+      .map((o) => ({
+        ...o,
+        package: db.packages.find((p) => p.id === o.packageId),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const jobs = db.jobs
+      .filter((j) => j.hirerId === userId)
+      .map((j) => ({
+        ...withCompany(j, db),
+        applicationCount: db.applications.filter((a) => a.jobId === j.id).length,
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return {
+      user: stripPassword(user),
+      company,
+      entitlements: company ? resolveEntitlements(company.subscription) : undefined,
+      usage: company ? { openJobs: countOpenJobs(db, userId) } : undefined,
+      applications,
+      orders,
+      jobs,
+      stats: {
+        applications: applications.length,
+        orders: orders.length,
+        jobsPosted: jobs.length,
+        openJobs: jobs.filter((j) => j.status === 'open').length,
+        hired: applications.filter((a) => a.status === 'hired').length,
+      },
     };
   },
 
@@ -681,8 +745,35 @@ export const mockApi = {
     const db = loadDb();
     return {
       jobs: db.jobs
-        .map((j) => withCompany(j, db))
+        .map((j) => {
+          const hirer = db.users.find((u) => u.id === j.hirerId);
+          return {
+            ...withCompany(j, db),
+            applicationCount: db.applications.filter((a) => a.jobId === j.id).length,
+            hirer: hirer ? stripPassword(hirer) : undefined,
+          };
+        })
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    };
+  },
+
+  async adminJobDetail(jobId: string) {
+    await delay();
+    const db = loadDb();
+    const job = db.jobs.find((j) => j.id === jobId);
+    if (!job) throw new Error('Job not found');
+    const hirer = db.users.find((u) => u.id === job.hirerId);
+    const applications = db.applications
+      .filter((a) => a.jobId === jobId)
+      .map((a) => ({
+        ...a,
+        seeker: stripPassword(db.users.find((u) => u.id === a.seekerId)!),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return {
+      job: withCompany(job, db),
+      hirer: hirer ? stripPassword(hirer) : undefined,
+      applications,
     };
   },
 
@@ -691,11 +782,14 @@ export const mockApi = {
     const db = loadDb();
     return {
       applications: db.applications
-        .map((a) => ({
-          ...a,
-          job: db.jobs.find((j) => j.id === a.jobId),
-          seeker: stripPassword(db.users.find((u) => u.id === a.seekerId)!),
-        }))
+        .map((a) => {
+          const job = db.jobs.find((j) => j.id === a.jobId);
+          return {
+            ...a,
+            job: job ? withCompany(job, db) : undefined,
+            seeker: stripPassword(db.users.find((u) => u.id === a.seekerId)!),
+          };
+        })
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     };
   },
@@ -829,19 +923,110 @@ export const mockApi = {
     return { package: pkg };
   },
 
+  async adminPackages() {
+    await delay();
+    const db = loadDb();
+    return {
+      packages: db.packages
+        .map((pkg) => {
+          const related = db.orders.filter((o) => o.packageId === pkg.id);
+          return {
+            ...pkg,
+            stats: {
+              orders: related.length,
+              revenue: related
+                .filter((o) => o.status !== 'cancelled' && o.status !== 'pending')
+                .reduce((sum, o) => sum + o.amount, 0),
+              pending: related.filter((o) =>
+                ['pending', 'paid', 'in_progress'].includes(o.status)
+              ).length,
+              delivered: related.filter((o) => o.status === 'delivered').length,
+            },
+          };
+        })
+        .sort((a, b) => a.price - b.price),
+    };
+  },
+
+  async adminPackageDetail(packageId: string) {
+    await delay();
+    const db = loadDb();
+    const pkg = db.packages.find((p) => p.id === packageId);
+    if (!pkg) throw new Error('Package not found');
+    const orders = db.orders
+      .filter((o) => o.packageId === pkg.id)
+      .map((o) => ({
+        ...o,
+        seeker: stripPassword(db.users.find((u) => u.id === o.seekerId)!),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return {
+      package: pkg,
+      orders,
+      stats: {
+        orders: orders.length,
+        revenue: orders
+          .filter((o) => o.status !== 'cancelled' && o.status !== 'pending')
+          .reduce((sum, o) => sum + o.amount, 0),
+        pending: orders.filter((o) => ['pending', 'paid', 'in_progress'].includes(o.status))
+          .length,
+        delivered: orders.filter((o) => o.status === 'delivered').length,
+      },
+    };
+  },
+
   async adminCompanies() {
     await delay();
     const db = loadDb();
     const companies = db.companies.map((company) => {
       const hirer = db.users.find((u) => u.id === company.hirerId);
+      const companyJobs = db.jobs.filter((j) => j.companyId === company.id);
+      const jobIds = new Set(companyJobs.map((j) => j.id));
       return {
         ...company,
         hirer: hirer ? stripPassword(hirer) : undefined,
         entitlements: resolveEntitlements(company.subscription),
         usage: { openJobs: countOpenJobs(db, company.hirerId) },
+        stats: {
+          jobs: companyJobs.length,
+          openJobs: companyJobs.filter((j) => j.status === 'open').length,
+          applications: db.applications.filter((a) => jobIds.has(a.jobId)).length,
+        },
       };
     });
     return { companies };
+  },
+
+  async adminCompanyDetail(companyId: string) {
+    await delay();
+    const db = loadDb();
+    const company = db.companies.find((c) => c.id === companyId);
+    if (!company) throw new Error('Company not found');
+    const hirer = db.users.find((u) => u.id === company.hirerId);
+    const jobs = db.jobs
+      .filter((j) => j.companyId === company.id)
+      .map((j) => ({
+        ...withCompany(j, db),
+        applicationCount: db.applications.filter((a) => a.jobId === j.id).length,
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const jobIds = new Set(jobs.map((j) => j.id));
+    const applications = db.applications
+      .filter((a) => jobIds.has(a.jobId))
+      .map((a) => ({
+        ...a,
+        job: db.jobs.find((j) => j.id === a.jobId),
+        seeker: stripPassword(db.users.find((u) => u.id === a.seekerId)!),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return {
+      company,
+      hirer: hirer ? stripPassword(hirer) : undefined,
+      entitlements: resolveEntitlements(company.subscription),
+      usage: { openJobs: countOpenJobs(db, company.hirerId) },
+      jobs,
+      applications,
+    };
   },
 
   async adminUpdateSubscription(

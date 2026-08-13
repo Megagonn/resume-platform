@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Briefcase, ClipboardList, CreditCard, FileText, Package, Users } from 'lucide-react';
 import { mockApi } from '../../lib/mockApi';
 import type { AdminStats } from '../../types';
 import { PageHeader, Spinner, StatCard } from '../../components/ui';
@@ -34,12 +35,22 @@ export default function AdminHome() {
   if (!stats) return <Spinner />;
 
   const cards = [
-    { label: 'Seekers', value: stats.seekers, to: '/admin/users' },
-    { label: 'Hirers', value: stats.hirers, to: '/admin/users' },
-    { label: 'Open jobs', value: stats.openJobs, to: '/admin/jobs' },
-    { label: 'Applications', value: stats.applications, to: '/admin/applications' },
-    { label: 'Active CV orders', value: stats.pendingOrders, to: '/admin/orders' },
-    { label: 'Packages', value: stats.packages, to: '/admin/packages' },
+    { label: 'Seekers', value: stats.seekers, to: '/admin/users', icon: <Users size={18} /> },
+    { label: 'Hirers', value: stats.hirers, to: '/admin/users', icon: <Users size={18} /> },
+    { label: 'Open jobs', value: stats.openJobs, to: '/admin/jobs', icon: <Briefcase size={18} /> },
+    {
+      label: 'Applications',
+      value: stats.applications,
+      to: '/admin/applications',
+      icon: <ClipboardList size={18} />,
+    },
+    {
+      label: 'Active CV orders',
+      value: stats.pendingOrders,
+      to: '/admin/orders',
+      icon: <Package size={18} />,
+    },
+    { label: 'Packages', value: stats.packages, to: '/admin/packages', icon: <FileText size={18} /> },
   ];
 
   return (
@@ -52,7 +63,7 @@ export default function AdminHome() {
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => (
           <Link key={c.label} to={c.to} className="block transition hover:-translate-y-0.5">
-            <StatCard label={c.label} value={c.value} />
+            <StatCard label={c.label} value={c.value} icon={c.icon} />
           </Link>
         ))}
       </div>
@@ -74,13 +85,21 @@ export default function AdminHome() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Link to="/admin/subscriptions">
-          <StatCard label="Free plans" value={stats.subscriptionsFree} />
+          <StatCard label="Free plans" value={stats.subscriptionsFree} icon={<CreditCard size={18} />} />
         </Link>
         <Link to="/admin/subscriptions">
-          <StatCard label="Premium plans" value={stats.subscriptionsPremium} />
+          <StatCard
+            label="Premium plans"
+            value={stats.subscriptionsPremium}
+            icon={<CreditCard size={18} />}
+          />
         </Link>
         <Link to="/admin/subscriptions">
-          <StatCard label="Custom plans" value={stats.subscriptionsCustom} />
+          <StatCard
+            label="Custom plans"
+            value={stats.subscriptionsCustom}
+            icon={<CreditCard size={18} />}
+          />
         </Link>
       </div>
     </div>

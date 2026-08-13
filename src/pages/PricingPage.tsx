@@ -19,8 +19,8 @@ export default function PricingPage() {
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`relative rounded-3xl border bg-white p-8 ${
-                pkg.popular ? 'border-primary shadow-soft' : 'border-border'
+              className={`relative rounded-3xl border bg-white p-8 transition hover:-translate-y-1 ${
+                pkg.popular ? 'border-primary shadow-lift' : 'border-border hover:shadow-soft'
               }`}
             >
               {pkg.popular && (
@@ -56,7 +56,7 @@ export default function PricingPage() {
         </p>
         <div className="mt-8 grid gap-6 md:grid-cols-3">
           {hirerPlans.map((plan) => (
-            <div key={plan.id} className="rounded-3xl border border-border bg-white p-8">
+            <div key={plan.id} className="rounded-3xl border border-border bg-white p-8 transition hover:-translate-y-1 hover:shadow-soft">
               <h3 className="text-xl font-bold">{plan.name}</h3>
               <p className="mt-2 font-display text-3xl text-primary">
                 {plan.price === null

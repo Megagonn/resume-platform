@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Sparkles } from 'lucide-react';
 import type { Job } from '../types';
 import { mockApi } from '../lib/mockApi';
 import { formatNaira, jobTypeLabel } from '../lib/utils';
-import { Badge, EmptyState, Input, PageHeader, Select, Spinner } from '../components/ui';
+import { Avatar, Badge, EmptyState, Input, PageHeader, SearchField, Select, Spinner } from '../components/ui';
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -33,16 +33,13 @@ export default function JobsPage() {
         title="Open opportunities"
         subtitle="Roles and gigs from hirers on The Ready Brand."
       />
-      <div className="mb-8 grid gap-3 rounded-2xl border border-border bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="relative sm:col-span-2 lg:col-span-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-          <input
-            className="w-full rounded-xl border border-border bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
-            placeholder="Search roles…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </div>
+      <div className="mb-8 grid gap-3 rounded-2xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+        <SearchField
+          className="sm:col-span-2 lg:col-span-1"
+          placeholder="Search roles…"
+          value={q}
+          onChange={setQ}
+        />
         <Select value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">All types</option>
           <option value="full-time">Full-time</option>
@@ -72,18 +69,27 @@ export default function JobsPage() {
             <Link
               key={job.id}
               to={`/jobs/${job.id}`}
-              className="block rounded-2xl border border-border bg-white p-6 transition hover:border-primary/30 hover:shadow-soft animate-fade-up"
+              className="block rounded-2xl border border-border bg-white p-6 transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lift animate-fade-up"
               style={{ animationDelay: `${i * 40}ms` }}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold text-ink">{job.title}</h2>
-                  <p className="mt-1 text-sm text-ink-muted">
-                    {job.company?.name || 'Company'} · {jobTypeLabel(job.type)}
-                  </p>
+                <div className="flex items-start gap-3">
+                  <Avatar name={job.company?.name} src={job.company?.logo} />
+                  <div>
+                    <h2 className="text-lg font-semibold text-ink">{job.title}</h2>
+                    <p className="mt-1 text-sm text-ink-muted">
+                      {job.company?.name || 'Company'} · {jobTypeLabel(job.type)}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {job.featured && <Badge tone="brand">Featured</Badge>}
+                  {job.featured && (
+                    <Badge tone="brand">
+                      <span className="inline-flex items-center gap-1">
+                        <Sparkles size={12} /> Featured
+                      </span>
+                    </Badge>
+                  )}
                   {job.remote && <Badge tone="brand">Remote</Badge>}
                   <Badge>{jobTypeLabel(job.type)}</Badge>
                 </div>

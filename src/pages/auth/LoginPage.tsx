@@ -26,12 +26,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-4 py-12">
-      <div className="rounded-3xl border border-border bg-white p-8 shadow-soft">
+    <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-12 lg:grid-cols-2">
+      <div className="hidden lg:block">
+        <p className="text-sm font-semibold uppercase tracking-widest text-accent">The Ready Brand</p>
+        <h1 className="mt-3 font-display text-5xl leading-tight text-ink">
+          Pick up where your career left off.
+        </h1>
+        <p className="mt-4 max-w-md text-ink-muted">
+          Seekers, hirers, and admins share one workspace — CVs, jobs, and hiring in a single flow.
+        </p>
+      </div>
+      <div className="rounded-3xl border border-border bg-white p-8 shadow-lift">
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Welcome back</p>
-        <h1 className="mt-2 font-display text-3xl text-ink">Log in</h1>
+        <h2 className="mt-2 font-display text-3xl text-ink">Log in</h2>
         <p className="mt-2 text-sm text-ink-muted">
-          Demo: ada@example.com / password · hiring@novatech.ng / password · admin@thereadybrand.com / Admin123!
+          Demo: ada@example.com / password · hiring@novatech.ng / password · admin@thereadybrand.com /
+          Admin123!
         </p>
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <Input

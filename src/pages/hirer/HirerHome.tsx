@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mockApi } from '../../lib/mockApi';
 import { statusLabel } from '../../lib/utils';
+import { Briefcase, Sparkles, Star, XCircle } from 'lucide-react';
 import { Badge, Button, Card, PageHeader, Spinner, StatCard, statusTone } from '../../components/ui';
 import { ChartCard, SimpleBarChart, SimplePieChart } from '../../components/Charts';
 import type { Job } from '../../types';
@@ -73,12 +74,18 @@ export default function HirerHome() {
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total openings" value={jobs.length} />
-        <StatCard label="Open now" value={open} hint={`${openJobs} counting toward plan`} />
-        <StatCard label="Featured" value={featured} />
+        <StatCard label="Total openings" value={jobs.length} icon={<Briefcase size={18} />} />
+        <StatCard
+          label="Open now"
+          value={open}
+          hint={`${openJobs} counting toward plan`}
+          icon={<Sparkles size={18} />}
+        />
+        <StatCard label="Featured" value={featured} icon={<Star size={18} />} />
         <StatCard
           label="Closed"
           value={jobs.filter((j) => j.status === 'closed').length}
+          icon={<XCircle size={18} />}
         />
       </div>
 

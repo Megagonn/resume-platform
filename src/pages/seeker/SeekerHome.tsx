@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { mockApi } from '../../lib/mockApi';
 import { formatNaira, statusLabel } from '../../lib/utils';
+import { Briefcase, ClipboardList, Package } from 'lucide-react';
 import { Badge, Button, Card, PageHeader, Spinner, StatCard, statusTone } from '../../components/ui';
 import { ChartCard, SimpleAreaChart, SimplePieChart } from '../../components/Charts';
 import type { Application, Order } from '../../types';
@@ -83,11 +84,12 @@ export default function SeekerHome() {
       />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <StatCard label="Applications" value={apps.length} />
-        <StatCard label="CV orders" value={orders.length} />
+        <StatCard label="Applications" value={apps.length} icon={<ClipboardList size={18} />} />
+        <StatCard label="CV orders" value={orders.length} icon={<Package size={18} />} />
         <StatCard
           label="In progress"
           value={orders.filter((o) => ['paid', 'in_progress'].includes(o.status)).length}
+          icon={<Briefcase size={18} />}
         />
       </div>
 

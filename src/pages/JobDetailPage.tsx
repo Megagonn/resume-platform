@@ -5,7 +5,7 @@ import type { Job } from '../types';
 import { mockApi } from '../lib/mockApi';
 import { formatDate, formatNaira, jobTypeLabel } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
-import { Badge, Button, Spinner, Textarea } from '../components/ui';
+import { Avatar, Badge, Button, Spinner, Textarea } from '../components/ui';
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -97,10 +97,15 @@ export default function JobDetailPage() {
             </Badge>
           ))}
         </div>
-        <h1 className="mt-4 font-display text-3xl text-ink md:text-4xl">{job.title}</h1>
-        <p className="mt-2 text-ink-muted">
-          {job.company?.name} · Posted {formatDate(job.createdAt)}
-        </p>
+        <div className="mt-6 flex items-start gap-4">
+          <Avatar name={job.company?.name} src={job.company?.logo} size="lg" />
+          <div>
+            <h1 className="font-display text-3xl text-ink md:text-4xl">{job.title}</h1>
+            <p className="mt-2 text-ink-muted">
+              {job.company?.name} · Posted {formatDate(job.createdAt)}
+            </p>
+          </div>
+        </div>
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-ink-muted">
           <span className="inline-flex items-center gap-1">
             <MapPin size={14} /> {job.location}

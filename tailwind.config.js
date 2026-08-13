@@ -39,6 +39,8 @@ module.exports = {
       },
       boxShadow: {
         soft: '0 18px 40px -20px rgba(93, 46, 70, 0.35)',
+        lift: '0 24px 50px -24px rgba(93, 46, 70, 0.45)',
+        drawer: '-20px 0 60px -20px rgba(28, 20, 24, 0.25)',
       },
       keyframes: {
         'fade-up': {
@@ -49,10 +51,15 @@ module.exports = {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'slide-in-right': {
+          '0%': { opacity: '0', transform: 'translateX(24px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.55s ease-out both',
         'fade-in': 'fade-in 0.35s ease-out both',
+        'slide-in-right': 'slide-in-right 0.28s ease-out both',
       },
       backgroundImage: {
         'hero-mesh':
