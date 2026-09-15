@@ -41,10 +41,10 @@ export default function LoginPage() {
         <BrandMark link={false} className="mb-6 lg:hidden" />
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Welcome back</p>
         <h2 className="mt-2 font-display text-3xl text-ink">Log in</h2>
-        <p className="mt-2 text-sm text-ink-muted">
+        {/* <p className="mt-2 text-sm text-ink-muted">
           Demo: ada@example.com / password · hiring@novatech.ng / password · admin@thereadybrand.com /
           Admin123!
-        </p>
+        </p> */}
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
           <Input
             label="Email"
