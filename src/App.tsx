@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { PublicLayout, ProtectedLayout } from './components/Layout';
@@ -33,6 +33,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminPackages from './pages/admin/AdminPackages';
 import AdminSubscriptions from './pages/admin/AdminSubscriptions';
 import AdminBlog from './pages/admin/AdminBlog';
+import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="employers" element={<EmployersPage />} />
             <Route path="blog" element={<BlogPage />} />
             <Route path="blog/:slug" element={<BlogPostPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           <Route path="seeker" element={<ProtectedLayout role="seeker" />}>
@@ -62,6 +64,7 @@ export default function App() {
             <Route path="applications" element={<SeekerApplications />} />
             <Route path="orders" element={<SeekerOrders />} />
             <Route path="profile" element={<SeekerProfile />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           <Route path="hirer" element={<ProtectedLayout role="hirer" />}>
@@ -71,6 +74,7 @@ export default function App() {
             <Route path="jobs/:id" element={<HirerJobDetail />} />
             <Route path="company" element={<HirerCompany />} />
             <Route path="billing" element={<HirerBilling />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
           <Route path="admin" element={<ProtectedLayout role="admin" />}>
@@ -82,9 +86,8 @@ export default function App() {
             <Route path="packages" element={<AdminPackages />} />
             <Route path="subscriptions" element={<AdminSubscriptions />} />
             <Route path="blog" element={<AdminBlog />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </BrowserRouter>
       </AuthProvider>
