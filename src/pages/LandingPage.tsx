@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Clock, FileText, Sparkles, Target, Users } from 'lucide-react';
+import { BrandMark } from '../components/BrandMark';
 import { Button } from '../components/ui';
-import { packages, hirerPlans } from '../data/fixtures';
+import { mockApi } from '../lib/mockApi';
 import { formatNaira } from '../lib/utils';
+import type { CvPackage, HirerPlan } from '../types';
 
 const features = [
   {
@@ -38,6 +41,16 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const [packages, setPackages] = useState<CvPackage[]>([]);
+  const [hirerPlans, setHirerPlans] = useState<HirerPlan[]>([]);
+
+  useEffect(() => {
+    Promise.all([mockApi.listPackages(), mockApi.listHirerPlans()]).then(([pkgRes, planRes]) => {
+      setPackages(pkgRes.packages);
+      setHirerPlans(planRes.plans);
+    });
+  }, []);
+
   return (
     <div>
       <section className="relative isolate min-h-[88vh] overflow-hidden">
@@ -51,47 +64,70 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a0f14] via-[#1a0f14]/92 to-transparent md:w-[68%]" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#1a0f14]/80 to-transparent md:hidden" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col justify-end px-4 pb-16 pt-28 md:justify-center md:pb-24 md:pt-20">
-          <div className="max-w-xl animate-fade-up">
-            <p className="font-display text-5xl leading-[1.02] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl">
-              The Ready Brand
-            </p>
-            <h1 className="mt-5 text-xl font-semibold text-white sm:text-2xl leading-snug drop-shadow-sm">
-              Career-ready CVs, and the jobs that deserve them.
+          <div className="max-w-2xl animate-fade-up">
+            <BrandMark variant="hero" link={false} />
+            <h1 className="mt-3 font-display text-3xl leading-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl">
+              Professional CV Writing &amp; Career Services That Help You Get Noticed
             </h1>
-            <p className="mt-4 max-w-md text-base font-medium text-white/90 leading-relaxed">
-              Professional rewriting and a hiring marketplace — built for candidates and companies
-              who want clarity.
+            <p className="mt-5 max-w-xl text-base font-medium text-white/90 leading-relaxed sm:text-lg">
+              Get an ATS-friendly CV, LinkedIn profile, cover letter and career support designed to
+              help you present your experience clearly and compete for better opportunities.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/services"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-[#5D2E46] shadow-lg transition hover:bg-white/95"
               >
-                Order a CV package <ArrowRight size={18} />
+                Get Your CV Reviewed <ArrowRight size={18} />
               </Link>
               <Link
-                to="/jobs"
+                to="/pricing"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-white/80 bg-black/20 px-6 py-3 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/15"
               >
-                Browse jobs
+                Explore Career Services
               </Link>
             </div>
+            <p className="mt-6 text-sm font-medium text-white/75">
+              CV writing &bull; LinkedIn optimization &bull; Cover letters &bull; Career coaching
+              &bull; Job opportunities
+            </p>
           </div>
         </div>
       </section>
 
       <section className="border-b border-border bg-white/70">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
-          {[
-            { value: 'ATS-ready', label: 'CVs written for screening systems' },
-            { value: '12–48h', label: 'Typical package turnaround' },
-            { value: 'Hire + rewrite', label: 'Jobs and services in one place' },
-          ].map((item) => (
-            <div key={item.label} className="text-center sm:text-left">
-              <p className="font-display text-2xl text-primary">{item.value}</p>
-              <p className="mt-1 text-sm text-ink-muted">{item.label}</p>
-            </div>
-          ))}
+        <div className="mx-auto max-w-6xl px-4 py-14">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-2xl text-ink md:text-3xl">
+              Your experience is valuable. Let&apos;s make sure your application shows it.
+            </h2>
+            <p className="mt-4 text-ink-muted leading-relaxed">
+              We help graduates and professionals turn their experience, skills and achievements into
+              stronger career documents and professional profiles that are easier for recruiters to
+              understand.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border bg-surface-muted/40">
+        <div className="mx-auto max-w-6xl px-4 py-14">
+          <div className="max-w-2xl">
+            <h2 className="font-display text-2xl text-ink md:text-3xl">
+              Built for ATS. Written for humans.
+            </h2>
+            <p className="mt-4 text-ink-muted leading-relaxed">
+              Your CV has to pass two tests: it needs to be readable by applicant tracking systems
+              and compelling enough for a recruiter to keep reading.
+            </p>
+            <p className="mt-3 text-ink-muted leading-relaxed">
+              We build your CV around the role you&apos;re targeting, using relevant keywords, clear
+              structure and achievement-focused language.
+            </p>
+            <Link to="/services" className="mt-8 inline-block">
+              <Button>Build My CV</Button>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -132,11 +168,11 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-6xl px-4 py-20">
           <div className="max-w-xl">
             <h2 className="font-display text-3xl text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] md:text-4xl">
-              For employers
+              You have a role to fill. Let the right candidates find it.
             </h2>
             <p className="mt-3 font-medium text-white/95 drop-shadow-sm">
-              Post openings on Free, unlock unlimited roles and featured listings with Premium, or
-              ask us for a Custom plan.
+              Post your vacancy and connect with graduates and professionals actively looking for
+              their next opportunity.
             </p>
           </div>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
@@ -148,7 +184,7 @@ export default function LandingPage() {
                     ? 'Custom'
                     : plan.price === 0
                       ? 'Free'
-                      : `${formatNaira(plan.price)}/mo`}
+                      : `${formatNaira(plan.price)}/month`}
                 </p>
                 <p className="mt-2 text-sm font-medium text-white/90">{plan.description}</p>
               </div>
@@ -156,10 +192,10 @@ export default function LandingPage() {
           </div>
           <div className="mt-10">
             <Link
-              to="/auth/signup"
+              to="/auth/signup?role=hirer"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-[#5D2E46] shadow-lg transition hover:bg-white/95"
             >
-              Hire on The Ready Brand <ArrowRight size={16} />
+              Post a Job <ArrowRight size={16} />
             </Link>
           </div>
         </div>

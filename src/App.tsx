@@ -9,8 +9,11 @@ import JobDetailPage from './pages/JobDetailPage';
 import ServicesPage from './pages/ServicesPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PricingPage from './pages/PricingPage';
+import EmployersPage from './pages/EmployersPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
+import ServiceLandingPage from './pages/ServiceLandingPage';
+import { SERVICE_PAGE_SLUGS } from './types';
 import SeekerHome from './pages/seeker/SeekerHome';
 import SeekerApplications from './pages/seeker/SeekerApplications';
 import SeekerOrders from './pages/seeker/SeekerOrders';
@@ -43,7 +46,11 @@ export default function App() {
             <Route path="jobs/:id" element={<JobDetailPage />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="services/checkout/:packageId" element={<CheckoutPage />} />
+            {SERVICE_PAGE_SLUGS.map((slug) => (
+              <Route key={slug} path={slug} element={<ServiceLandingPage />} />
+            ))}
             <Route path="pricing" element={<PricingPage />} />
+            <Route path="employers" element={<EmployersPage />} />
             <Route path="blog" element={<BlogPage />} />
             <Route path="blog/:slug" element={<BlogPostPage />} />
           </Route>

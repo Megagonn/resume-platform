@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, dashboardPath } from '../../context/AuthContext';
+import { BrandMark } from '../../components/BrandMark';
 import { Button, Input } from '../../components/ui';
 
 export default function LoginPage() {
@@ -28,8 +29,8 @@ export default function LoginPage() {
   return (
     <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-12 lg:grid-cols-2">
       <div className="hidden lg:block">
-        <p className="text-sm font-semibold uppercase tracking-widest text-accent">The Ready Brand</p>
-        <h1 className="mt-3 font-display text-5xl leading-tight text-ink">
+        <BrandMark link={false} className="mb-6" />
+        <h1 className="font-display text-5xl leading-tight text-ink">
           Pick up where your career left off.
         </h1>
         <p className="mt-4 max-w-md text-ink-muted">
@@ -37,6 +38,7 @@ export default function LoginPage() {
         </p>
       </div>
       <div className="rounded-3xl border border-border bg-white p-8 shadow-lift">
+        <BrandMark link={false} className="mb-6 lg:hidden" />
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Welcome back</p>
         <h2 className="mt-2 font-display text-3xl text-ink">Log in</h2>
         <p className="mt-2 text-sm text-ink-muted">

@@ -30,8 +30,8 @@ export default function JobsPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <PageHeader
-        title="Open opportunities"
-        subtitle="Roles and gigs from hirers on The Ready Brand."
+        title="Find Your Next Job Opportunity"
+        subtitle="Discover verified job vacancies, graduate opportunities, internships, remote jobs and career opportunities across Nigeria and beyond."
       />
       <div className="mb-8 grid gap-3 rounded-2xl border border-border bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
         <SearchField

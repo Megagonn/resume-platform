@@ -1,13 +1,19 @@
-import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { FormEvent, useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, dashboardPath } from '../../context/AuthContext';
+import { BrandMark } from '../../components/BrandMark';
 import { Button, Input } from '../../components/ui';
 import { cn } from '../../lib/utils';
 
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [role, setRole] = useState<'seeker' | 'hirer'>('seeker');
+
+  useEffect(() => {
+    if (searchParams.get('role') === 'hirer') setRole('hirer');
+  }, [searchParams]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +46,7 @@ export default function SignupPage() {
   return (
     <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl items-center gap-10 px-4 py-12 lg:grid-cols-2">
       <div className="hidden lg:block">
+        <BrandMark link={false} className="mb-6" />
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Join the marketplace</p>
         <h1 className="mt-3 font-display text-5xl leading-tight text-ink">
           One profile for writing, applying, or hiring.
@@ -49,6 +56,7 @@ export default function SignupPage() {
         </p>
       </div>
       <div className="rounded-3xl border border-border bg-white p-8 shadow-lift">
+        <BrandMark link={false} className="mb-6 lg:hidden" />
         <p className="text-sm font-semibold uppercase tracking-widest text-accent">Get started</p>
         <h1 className="mt-2 font-display text-3xl text-ink">Create your profile</h1>
         <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl bg-surface-muted p-1">

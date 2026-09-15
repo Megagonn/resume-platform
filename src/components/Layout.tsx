@@ -25,21 +25,9 @@ import { Avatar, Button } from './ui';
 import { cn } from '../lib/utils';
 import { useDarkMode } from '../hooks/useDarkMode';
 import type { UserRole } from '../types';
-
-function BrandMark({ compact }: { compact?: boolean }) {
-  return (
-    <Link to="/" className={cn('flex items-center gap-2.5', compact && 'justify-center')}>
-      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary font-display text-sm text-white shadow-md shadow-primary/30 dark:bg-accent-light dark:text-primary-900 dark:shadow-none">
-        RB
-      </span>
-      {!compact && (
-        <span className="font-display text-lg tracking-tight text-primary dark:text-accent-light">
-          The Ready Brand
-        </span>
-      )}
-    </Link>
-  );
-}
+import { SERVICE_PAGE_SLUGS } from '../types';
+import { servicePageLabels } from '../data/servicePages';
+import { BrandMark } from './BrandMark';
 
 function SiteFooter() {
   return (
@@ -48,48 +36,82 @@ function SiteFooter() {
         <div>
           <BrandMark />
           <p className="mt-3 max-w-sm text-sm text-ink-muted dark:text-primary-200">
-            Professional CV writing and a job marketplace for candidates and hirers.
+            Professional CV writing and career services that help you get noticed — plus verified job
+            opportunities across Nigeria and beyond.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-x-10 gap-y-3 text-sm sm:grid-cols-3">
-          <Link
-            to="/jobs"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            Jobs
-          </Link>
-          <Link
-            to="/services"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            CV services
-          </Link>
-          <Link
-            to="/pricing"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            Pricing
-          </Link>
-          <Link
-            to="/blog"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            Blog
-          </Link>
-          <a
-            href="https://wa.me/2347064641892"
-            target="_blank"
-            rel="noreferrer"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            WhatsApp
-          </a>
-          <a
-            href="mailto:hannah.cvwriter@gmail.com"
-            className="text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
-          >
-            Email
-          </a>
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-3 text-sm">
+            <p className="font-semibold text-ink dark:text-primary-50">Platform</p>
+            <Link
+              to="/jobs"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              Jobs
+            </Link>
+            <Link
+              to="/services"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              All services
+            </Link>
+            <Link
+              to="/pricing"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              Pricing
+            </Link>
+            <Link
+              to="/employers"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              For employers
+            </Link>
+            <Link
+              to="/blog"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              Blog
+            </Link>
+          </div>
+          <div className="space-y-3 text-sm">
+            <p className="font-semibold text-ink dark:text-primary-50">Writing services</p>
+            {SERVICE_PAGE_SLUGS.slice(0, 4).map((slug) => (
+              <Link
+                key={slug}
+                to={`/${slug}`}
+                className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+              >
+                {servicePageLabels[slug]}
+              </Link>
+            ))}
+          </div>
+          <div className="space-y-3 text-sm">
+            <p className="font-semibold text-ink dark:text-primary-50">More services</p>
+            {SERVICE_PAGE_SLUGS.slice(4).map((slug) => (
+              <Link
+                key={slug}
+                to={`/${slug}`}
+                className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+              >
+                {servicePageLabels[slug]}
+              </Link>
+            ))}
+            <a
+              href="https://wa.me/2347064641892"
+              target="_blank"
+              rel="noreferrer"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              WhatsApp
+            </a>
+            <a
+              href="mailto:hannah.cvwriter@gmail.com"
+              className="block text-ink-muted transition hover:text-primary dark:text-primary-200 dark:hover:text-accent-light"
+            >
+              Email
+            </a>
+          </div>
         </div>
       </div>
     </footer>
@@ -120,6 +142,7 @@ export function PublicLayout() {
             {navLink('/jobs', 'Jobs')}
             {navLink('/services', 'CV Services')}
             {navLink('/pricing', 'Pricing')}
+            {navLink('/employers', 'For employers')}
             {navLink('/blog', 'Blog')}
             <button
               type="button"
@@ -185,6 +208,13 @@ export function PublicLayout() {
               className="block text-sm font-medium dark:text-primary-100"
             >
               Pricing
+            </Link>
+            <Link
+              to="/employers"
+              onClick={() => setOpen(false)}
+              className="block text-sm font-medium dark:text-primary-100"
+            >
+              For employers
             </Link>
             <Link
               to="/blog"

@@ -16,7 +16,7 @@ export const hirerPlans: HirerPlan[] = [
     name: 'Free',
     price: 0,
     currency: 'NGN',
-    description: 'Post one open role and preview applicants.',
+    description: 'Post one opening and preview applicants.',
     features: [
       '1 concurrent open job',
       'Applicant preview (first 5)',
@@ -34,7 +34,8 @@ export const hirerPlans: HirerPlan[] = [
     name: 'Premium',
     price: 25000,
     currency: 'NGN',
-    description: 'Unlimited openings, featured listings, full applicant access.',
+    description:
+      'Reach more candidates with unlimited job postings, featured listings and full applicant access.',
     features: [
       'Unlimited open jobs',
       'Featured job listings',

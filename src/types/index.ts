@@ -219,3 +219,77 @@ export interface AdminPackageStats {
 export interface AdminPackageRow extends CvPackage {
   stats: AdminPackageStats;
 }
+
+export interface ServiceBenefit {
+  title: string;
+  description: string;
+}
+
+export interface ServiceProcessStep {
+  title: string;
+  description: string;
+}
+
+export interface ServiceFaq {
+  question: string;
+  answer: string;
+  sortOrder?: number;
+}
+
+export interface ServiceTestimonial {
+  name: string;
+  role: string;
+  company?: string;
+  quote: string;
+  rating?: number;
+}
+
+export interface ServiceExample {
+  title: string;
+  description: string;
+  highlight?: string;
+}
+
+export interface ServicePage {
+  id: string;
+  slug: string;
+  published: boolean;
+  sortOrder: number;
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string[];
+  eyebrow: string;
+  headline: string;
+  subheadline: string;
+  benefits: ServiceBenefit[];
+  processSteps: ServiceProcessStep[];
+  faqs: ServiceFaq[];
+  testimonials: ServiceTestimonial[];
+  examples: ServiceExample[];
+  recommendedPackageSlug: string;
+  primaryCtaLabel: string;
+  primaryCtaHref: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ServicePageSlug =
+  | 'cv-writing'
+  | 'resume-writing'
+  | 'linkedin-optimization'
+  | 'cover-letter'
+  | 'statement-of-purpose'
+  | 'personal-statement'
+  | 'academic-writing'
+  | 'career-coaching';
+
+export const SERVICE_PAGE_SLUGS: ServicePageSlug[] = [
+  'cv-writing',
+  'resume-writing',
+  'linkedin-optimization',
+  'cover-letter',
+  'statement-of-purpose',
+  'personal-statement',
+  'academic-writing',
+  'career-coaching',
+];
