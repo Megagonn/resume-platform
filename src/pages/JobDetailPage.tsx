@@ -5,11 +5,14 @@ import type { Job } from '../types';
 import { mockApi } from '../lib/mockApi';
 import { formatDate, formatNaira, jobTypeLabel } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useNotify } from '../context/NotificationContext';
+import { getErrorMessage } from '../lib/errors';
 import { Avatar, Badge, Button, Spinner, Textarea } from '../components/ui';
 
 export default function JobDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,8 +20,6 @@ export default function JobDetailPage() {
   const [coverNote, setCoverNote] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeUrl, setResumeUrl] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,26 +45,25 @@ export default function JobDetailPage() {
       return;
     }
     if (user.role !== 'seeker') {
-      setError('Only job seekers can apply.');
+      notifyError('Only job seekers can apply.');
       return;
     }
     if (!resumeFile && !resumeUrl) {
-      setError('Upload a CV or ensure one is saved on your profile.');
+      notifyError('Upload a CV or ensure one is saved on your profile.');
       return;
     }
     setSubmitting(true);
-    setError('');
     try {
       await mockApi.applyToJob(id!, user.id, {
         coverNote,
         resumeUrl: resumeFile ? undefined : resumeUrl || undefined,
         resumeFile: resumeFile || undefined,
       });
-      setSuccess('Application submitted.');
+      notifySuccess('Application submitted.');
       setShowApply(false);
       setResumeFile(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to apply');
+      notifyError(getErrorMessage(err, 'Failed to apply'));
     } finally {
       setSubmitting(false);
     }
@@ -124,8 +124,6 @@ export default function JobDetailPage() {
             <p className="mt-2 text-sm text-ink-muted">{job.company.about}</p>
           </div>
         )}
-        {success && <p className="mt-6 text-sm font-medium text-emerald-700">{success}</p>}
-        {error && !showApply && <p className="mt-6 text-sm text-red-600">{error}</p>}
         <div className="mt-8">
           {!showApply ? (
             <Button
@@ -168,7 +166,6 @@ export default function JobDetailPage() {
                   </p>
                 )}
               </label>
-              {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-2">
                 <Button type="submit" disabled={submitting}>
                   {submitting ? 'Submitting…' : 'Submit application'}

@@ -1,12 +1,15 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import type { CompanySubscription } from '../../types';
 import { Badge, Button, Card, Input, PageHeader, Spinner, Textarea } from '../../components/ui';
 
 export default function HirerCompany() {
   const { user, setUser } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const [accountName, setAccountName] = useState('');
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -22,11 +25,6 @@ export default function HirerCompany() {
   const [savingCompany, setSavingCompany] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [accountMsg, setAccountMsg] = useState('');
-  const [companyMsg, setCompanyMsg] = useState('');
-  const [accountErr, setAccountErr] = useState('');
-  const [companyErr, setCompanyErr] = useState('');
-
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -50,7 +48,9 @@ export default function HirerCompany() {
         }
       })
       .catch((err) => {
-        setLoadError(err instanceof Error ? err.message : 'Failed to load profile');
+        const msg = getErrorMessage(err, 'Failed to load profile');
+        setLoadError(msg);
+        notifyError(msg);
       })
       .finally(() => setLoading(false));
   }, [user]);
@@ -58,13 +58,12 @@ export default function HirerCompany() {
   const onAvatarFile = async (file: File | null) => {
     if (!file) return;
     setUploadingAvatar(true);
-    setAccountErr('');
     try {
       const res = await mockApi.uploadImage(file);
       setAvatarUrl(res.file.url);
-      setAccountMsg('Photo uploaded — save account to keep it.');
+      notifySuccess('Photo uploaded — save account to keep it.');
     } catch (err) {
-      setAccountErr(err instanceof Error ? err.message : 'Photo upload failed');
+      notifyError(getErrorMessage(err, 'Photo upload failed'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -73,13 +72,12 @@ export default function HirerCompany() {
   const onLogoFile = async (file: File | null) => {
     if (!file) return;
     setUploadingLogo(true);
-    setCompanyErr('');
     try {
       const res = await mockApi.uploadImage(file);
       setLogo(res.file.url);
-      setCompanyMsg('Logo uploaded — save company to keep it.');
+      notifySuccess('Logo uploaded — save company to keep it.');
     } catch (err) {
-      setCompanyErr(err instanceof Error ? err.message : 'Logo upload failed');
+      notifyError(getErrorMessage(err, 'Logo upload failed'));
     } finally {
       setUploadingLogo(false);
     }
@@ -89,8 +87,6 @@ export default function HirerCompany() {
     e.preventDefault();
     if (!user) return;
     setSavingAccount(true);
-    setAccountMsg('');
-    setAccountErr('');
     try {
       const res = await mockApi.updateHirerAccount(user.id, {
         name: accountName,
@@ -98,9 +94,9 @@ export default function HirerCompany() {
         avatarUrl,
       });
       setUser(res.user);
-      setAccountMsg('Account updated.');
+      notifySuccess('Account updated.');
     } catch (err) {
-      setAccountErr(err instanceof Error ? err.message : 'Save failed');
+      notifyError(getErrorMessage(err, 'Save failed'));
     } finally {
       setSavingAccount(false);
     }
@@ -110,8 +106,6 @@ export default function HirerCompany() {
     e.preventDefault();
     if (!user) return;
     setSavingCompany(true);
-    setCompanyMsg('');
-    setCompanyErr('');
     try {
       const res = await mockApi.updateCompany(user.id, {
         name,
@@ -121,10 +115,10 @@ export default function HirerCompany() {
         about,
       });
       setSubscription(res.company.subscription);
-      setCompanyMsg('Company profile saved.');
+      notifySuccess('Company profile saved.');
       setLoadError('');
     } catch (err) {
-      setCompanyErr(err instanceof Error ? err.message : 'Save failed');
+      notifyError(getErrorMessage(err, 'Save failed'));
     } finally {
       setSavingCompany(false);
     }
@@ -184,8 +178,6 @@ export default function HirerCompany() {
             />
             <Input label="Email" value={user?.email || ''} disabled />
             <Input label="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            {accountMsg && <p className="text-sm text-emerald-700">{accountMsg}</p>}
-            {accountErr && <p className="text-sm text-red-600">{accountErr}</p>}
             <Button type="submit" disabled={savingAccount || uploadingAvatar}>
               {savingAccount ? 'Saving…' : 'Save account'}
             </Button>
@@ -231,8 +223,6 @@ export default function HirerCompany() {
               onChange={(e) => setLocation(e.target.value)}
             />
             <Textarea label="About" value={about} onChange={(e) => setAbout(e.target.value)} />
-            {companyMsg && <p className="text-sm text-emerald-700">{companyMsg}</p>}
-            {companyErr && <p className="text-sm text-red-600">{companyErr}</p>}
             <Button type="submit" disabled={savingCompany || uploadingLogo}>
               {savingCompany ? 'Saving…' : 'Save company'}
             </Button>

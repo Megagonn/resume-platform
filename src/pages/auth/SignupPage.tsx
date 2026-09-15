@@ -1,12 +1,15 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth, dashboardPath } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { BrandMark } from '../../components/BrandMark';
 import { Button, Input } from '../../components/ui';
 import { cn } from '../../lib/utils';
 
 export default function SignupPage() {
   const { signup } = useAuth();
+  const { notifyError } = useNotify();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [role, setRole] = useState<'seeker' | 'hirer'>('seeker');
@@ -19,12 +22,10 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const user = await signup({
@@ -37,7 +38,7 @@ export default function SignupPage() {
       });
       navigate(dashboardPath(user.role));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      notifyError(getErrorMessage(err, 'Signup failed'), 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -107,7 +108,6 @@ export default function SignupPage() {
               onChange={(e) => setCompanyName(e.target.value)}
             />
           )}
-          {error && <p className="text-sm text-red-600">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Creating…' : 'Create account'}
           </Button>

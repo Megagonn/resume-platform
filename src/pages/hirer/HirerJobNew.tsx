@@ -1,12 +1,15 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import type { JobType, JobStatus, PlanEntitlements } from '../../types';
 import { Button, Input, PageHeader, Select, Textarea } from '../../components/ui';
 
 export default function HirerJobNew() {
   const { user } = useAuth();
+  const { notifyError } = useNotify();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -20,7 +23,6 @@ export default function HirerJobNew() {
   const [maxSal, setMaxSal] = useState('');
   const [entitlements, setEntitlements] = useState<PlanEntitlements | null>(null);
   const [openJobs, setOpenJobs] = useState(0);
-  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -41,7 +43,6 @@ export default function HirerJobNew() {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    setError('');
     try {
       const res = await mockApi.createJob(user.id, {
         title,
@@ -66,7 +67,7 @@ export default function HirerJobNew() {
       });
       navigate(`/hirer/jobs/${res.job.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create');
+      notifyError(getErrorMessage(err, 'Failed to create'));
     } finally {
       setSaving(false);
     }
@@ -169,7 +170,6 @@ export default function HirerJobNew() {
             onChange={(e) => setMaxSal(e.target.value)}
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" disabled={saving || atOpenLimit}>
           {saving ? 'Publishing…' : 'Publish opening'}
         </Button>

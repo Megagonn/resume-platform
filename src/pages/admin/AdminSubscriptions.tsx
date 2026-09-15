@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Globe, MapPin } from 'lucide-react';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatNaira, statusLabel } from '../../lib/utils';
 import type {
@@ -44,6 +46,7 @@ type CompanyDetail = {
 };
 
 export default function AdminSubscriptions() {
+  const { notifySuccess, notifyError } = useNotify();
   const [companies, setCompanies] = useState<CompanyRow[]>([]);
   const [plans, setPlans] = useState<HirerPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,6 @@ export default function AdminSubscriptions() {
   const [fullApplicantAccess, setFullApplicantAccess] = useState(true);
   const [applicantPreviewLimit, setApplicantPreviewLimit] = useState('5');
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
   const [premiumPrice, setPremiumPrice] = useState('');
   const [savingPlan, setSavingPlan] = useState(false);
 
@@ -105,7 +107,6 @@ export default function AdminSubscriptions() {
         setFeaturedAllowed(d.company.subscription.featuredAllowed ?? true);
         setFullApplicantAccess(d.company.subscription.fullApplicantAccess ?? true);
         setApplicantPreviewLimit(String(d.company.subscription.applicantPreviewLimit ?? 5));
-        setMessage('');
       })
       .finally(() => setDetailLoading(false));
   }, [selectedId]);
@@ -114,7 +115,6 @@ export default function AdminSubscriptions() {
     e.preventDefault();
     if (!selectedId) return;
     setSaving(true);
-    setMessage('');
     try {
       await mockApi.adminUpdateSubscription(selectedId, {
         plan,
@@ -125,12 +125,12 @@ export default function AdminSubscriptions() {
         fullApplicantAccess: plan === 'custom' ? fullApplicantAccess : undefined,
         applicantPreviewLimit: plan === 'custom' ? Number(applicantPreviewLimit) || 5 : undefined,
       });
-      setMessage('Subscription updated.');
+      notifySuccess('Subscription updated.');
       await load();
       const res = await mockApi.adminCompanyDetail(selectedId);
       setDetail(res as CompanyDetail);
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Update failed');
+      notifyError(getErrorMessage(err, 'Update failed'));
     } finally {
       setSaving(false);
     }
@@ -144,7 +144,10 @@ export default function AdminSubscriptions() {
       await mockApi.adminUpdateHirerPlan(premium.id, {
         price: Number(premiumPrice) || 0,
       });
+      notifySuccess('Premium plan price updated.');
       await load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to update plan price'));
     } finally {
       setSavingPlan(false);
     }
@@ -368,7 +371,6 @@ export default function AdminSubscriptions() {
                 </>
               )}
               <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-              {message && <p className="text-sm text-primary">{message}</p>}
               <Button type="submit" disabled={saving}>
                 {saving ? 'Saving…' : 'Save subscription'}
               </Button>

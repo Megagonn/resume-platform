@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { PublicLayout, ProtectedLayout } from './components/Layout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -35,8 +36,9 @@ import AdminBlog from './pages/admin/AdminBlog';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <NotificationProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Routes>
           <Route element={<PublicLayout />}>
             <Route index element={<LandingPage />} />
@@ -84,7 +86,8 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </NotificationProvider>
   );
 }

@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate, statusLabel } from '../../lib/utils';
 import type {
@@ -33,6 +35,7 @@ const appStatuses: ApplicationStatus[] = [
 export default function HirerJobDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const [job, setJob] = useState<Job | null>(null);
   const [apps, setApps] = useState<Application[]>([]);
   const [previewCapped, setPreviewCapped] = useState(false);
@@ -45,8 +48,6 @@ export default function HirerJobDetail() {
   const [featured, setFeatured] = useState(false);
   const [canFeature, setCanFeature] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-
   const load = async () => {
     if (!user || !id) return;
     setLoading(true);
@@ -80,7 +81,6 @@ export default function HirerJobDetail() {
     e.preventDefault();
     if (!user || !id) return;
     setSaving(true);
-    setMessage('');
     try {
       const res = await mockApi.updateJob(user.id, id, {
         title,
@@ -89,9 +89,9 @@ export default function HirerJobDetail() {
         featured: canFeature ? featured : false,
       });
       setJob(res.job);
-      setMessage('Opening updated.');
+      notifySuccess('Opening updated.');
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Update failed');
+      notifyError(getErrorMessage(err, 'Update failed'));
     } finally {
       setSaving(false);
     }
@@ -99,8 +99,13 @@ export default function HirerJobDetail() {
 
   const onStatus = async (appId: string, next: ApplicationStatus) => {
     if (!user) return;
-    await mockApi.updateApplicationStatus(user.id, appId, next);
-    load();
+    try {
+      await mockApi.updateApplicationStatus(user.id, appId, next);
+      notifySuccess('Application status updated.');
+      load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to update application'));
+    }
   };
 
   if (loading) return <Spinner />;
@@ -165,7 +170,6 @@ export default function HirerJobDetail() {
             </Link>
           </p>
         )}
-        {message && <p className="text-sm text-primary">{message}</p>}
         <Button type="submit" disabled={saving}>
           {saving ? 'Saving…' : 'Save changes'}
         </Button>

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Briefcase, Mail, MapPin, Package, Phone } from 'lucide-react';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate, formatNaira, statusLabel } from '../../lib/utils';
 import type {
@@ -38,6 +40,7 @@ type UserDetail = {
 };
 
 export default function AdminUsers() {
+  const { notifySuccess, notifyError } = useNotify();
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -69,10 +72,15 @@ export default function AdminUsers() {
   }, [selectedId]);
 
   const onRole = async (id: string, role: UserRole) => {
-    await mockApi.adminUpdateUser(id, { role });
-    load();
-    if (selectedId === id) {
-      mockApi.adminUserDetail(id).then((res) => setDetail(res as UserDetail));
+    try {
+      await mockApi.adminUpdateUser(id, { role });
+      notifySuccess('User role updated.');
+      load();
+      if (selectedId === id) {
+        mockApi.adminUserDetail(id).then((res) => setDetail(res as UserDetail));
+      }
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to update user'));
     }
   };
 

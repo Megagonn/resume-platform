@@ -7,7 +7,7 @@ import {
   type TextareaHTMLAttributes,
   type SelectHTMLAttributes,
 } from 'react';
-import { Search, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Search, X } from 'lucide-react';
 
 export function Button({
   className,
@@ -352,6 +352,86 @@ export function FilterPills({
           {opt.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+export function AlertModal({
+  open,
+  onClose,
+  type,
+  title,
+  message,
+}: {
+  open: boolean;
+  onClose: () => void;
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const isSuccess = type === 'success';
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+      <button
+        type="button"
+        className="absolute inset-0 bg-ink/45 backdrop-blur-[2px]"
+        aria-label="Close dialog"
+        onClick={onClose}
+      />
+      <div
+        role="alertdialog"
+        aria-labelledby="alert-title"
+        aria-describedby="alert-message"
+        className="relative w-full max-w-md rounded-2xl border border-border bg-white p-6 shadow-lift animate-fade-in dark:border-primary-700 dark:bg-primary-800"
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
+              isSuccess ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'
+            )}
+          >
+            {isSuccess ? <CheckCircle2 size={22} /> : <AlertCircle size={22} />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 id="alert-title" className="font-display text-xl text-ink dark:text-primary-50">
+              {title}
+            </h2>
+            <p
+              id="alert-message"
+              className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-muted dark:text-primary-200"
+            >
+              {message}
+            </p>
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end">
+          <Button
+            type="button"
+            variant={isSuccess ? 'primary' : 'danger'}
+            onClick={onClose}
+            autoFocus
+          >
+            OK
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

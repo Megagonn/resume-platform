@@ -1,26 +1,27 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth, dashboardPath } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { BrandMark } from '../../components/BrandMark';
 import { Button, Input } from '../../components/ui';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { notifyError } = useNotify();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     try {
       const user = await login(email, password);
       navigate(dashboardPath(user.role));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      notifyError(getErrorMessage(err, 'Login failed'), 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -60,7 +61,6 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>

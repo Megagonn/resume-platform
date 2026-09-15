@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate, jobTypeLabel, statusLabel } from '../../lib/utils';
 import {
@@ -18,6 +20,7 @@ import type { Job } from '../../types';
 
 export default function HirerJobs() {
   const { user } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,8 +37,13 @@ export default function HirerJobs() {
 
   const onDelete = async (id: string) => {
     if (!user || !confirm('Delete this opening?')) return;
-    await mockApi.deleteJob(user.id, id);
-    load();
+    try {
+      await mockApi.deleteJob(user.id, id);
+      notifySuccess('Opening deleted.');
+      load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Delete failed'));
+    }
   };
 
   if (loading) return <Spinner />;

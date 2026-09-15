@@ -1,6 +1,8 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
 import { mockApi } from '../../lib/mockApi';
+import { getErrorMessage } from '../../lib/errors';
 import { formatDate } from '../../lib/utils';
 import type { BlogPost } from '../../types';
 import {
@@ -25,6 +27,7 @@ const emptyForm = {
 
 export default function AdminBlog() {
   const { user } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const fileRef = useRef<HTMLInputElement>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,13 +35,14 @@ export default function AdminBlog() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');
 
   const load = async () => {
     setLoading(true);
     try {
       const res = await mockApi.adminListBlogPosts();
       setPosts(res.posts);
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to load blog posts'));
     } finally {
       setLoading(false);
     }
@@ -58,26 +62,23 @@ export default function AdminBlog() {
       coverImage: post.coverImage || '',
       published: post.published,
     });
-    setMessage('');
   };
 
   const startNew = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setMessage('');
     if (fileRef.current) fileRef.current.value = '';
   };
 
   const onUploadCover = async (file: File | null) => {
     if (!file) return;
     setUploading(true);
-    setMessage('');
     try {
       const res = await mockApi.uploadImage(file);
       setForm((f) => ({ ...f, coverImage: res.file.url }));
-      setMessage('Cover image uploaded.');
+      notifySuccess('Cover image uploaded.');
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Upload failed');
+      notifyError(getErrorMessage(err, 'Upload failed'));
     } finally {
       setUploading(false);
     }
@@ -87,19 +88,18 @@ export default function AdminBlog() {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    setMessage('');
     try {
       if (editingId) {
         await mockApi.adminUpdateBlogPost(editingId, form);
-        setMessage('Post updated.');
+        notifySuccess('Post updated.');
       } else {
         await mockApi.adminCreateBlogPost(user.id, form);
-        setMessage('Post created.');
+        notifySuccess('Post created.');
       }
       startNew();
       await load();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Save failed');
+      notifyError(getErrorMessage(err, 'Save failed'));
     } finally {
       setSaving(false);
     }
@@ -107,9 +107,14 @@ export default function AdminBlog() {
 
   const onDelete = async (id: string) => {
     if (!confirm('Delete this post?')) return;
-    await mockApi.adminDeleteBlogPost(id);
-    if (editingId === id) startNew();
-    await load();
+    try {
+      await mockApi.adminDeleteBlogPost(id);
+      notifySuccess('Post deleted.');
+      if (editingId === id) startNew();
+      await load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Delete failed'));
+    }
   };
 
   if (loading) return <Spinner />;
@@ -238,7 +243,6 @@ export default function AdminBlog() {
             />
             Publish publicly
           </label>
-          {message && <p className="text-sm text-primary">{message}</p>}
           <Button type="submit" disabled={saving || uploading}>
             {saving ? 'Saving…' : editingId ? 'Update post' : 'Create post'}
           </Button>

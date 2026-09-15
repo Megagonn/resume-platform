@@ -1,4 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate, formatNaira, statusLabel } from '../../lib/utils';
 import type { Order, OrderStatus } from '../../types';
@@ -22,6 +24,7 @@ const statuses: OrderStatus[] = [
 ];
 
 export default function AdminOrders() {
+  const { notifySuccess, notifyError } = useNotify();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [deliveringId, setDeliveringId] = useState<string | null>(null);
@@ -29,8 +32,6 @@ export default function AdminOrders() {
   const [deliverables, setDeliverables] = useState('CV + cover letter');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-
   const load = () => {
     setLoading(true);
     mockApi
@@ -44,34 +45,37 @@ export default function AdminOrders() {
   const onStatus = async (id: string, status: OrderStatus) => {
     if (status === 'delivered') {
       setDeliveringId(id);
-      setMessage('');
       setFile(null);
       const order = orders.find((o) => o.id === id);
       setDeliverables(order?.deliverables || 'CV + cover letter');
       setNotes(order?.notes || '');
       return;
     }
-    await mockApi.adminUpdateOrder(id, { status });
-    load();
+    try {
+      await mockApi.adminUpdateOrder(id, { status });
+      notifySuccess('Order status updated.');
+      load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to update order'));
+    }
   };
 
   const onDeliver = async (e: FormEvent) => {
     e.preventDefault();
     if (!deliveringId) return;
     setSaving(true);
-    setMessage('');
     try {
       await mockApi.adminDeliverOrder(deliveringId, {
         file: file || undefined,
         deliverables,
         notes,
       });
-      setMessage('Order delivered — seeker can download from their dashboard.');
+      notifySuccess('Order delivered — seeker can download from their dashboard.');
       setDeliveringId(null);
       setFile(null);
       load();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Delivery failed');
+      notifyError(getErrorMessage(err, 'Delivery failed'));
     } finally {
       setSaving(false);
     }
@@ -133,7 +137,6 @@ export default function AdminOrders() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
-          {message && <p className="text-sm text-primary">{message}</p>}
           <Button type="submit" disabled={saving}>
             {saving ? 'Delivering…' : 'Mark delivered & publish file'}
           </Button>

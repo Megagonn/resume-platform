@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatDate, formatNaira, statusLabel } from '../../lib/utils';
 import type { AdminPackageRow, Order } from '../../types';
@@ -23,6 +25,7 @@ type PackageDetail = {
 };
 
 export default function AdminPackages() {
+  const { notifySuccess, notifyError } = useNotify();
   const [packages, setPackages] = useState<AdminPackageRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -75,6 +78,7 @@ export default function AdminPackages() {
         popular: false,
         active: true,
       });
+      notifySuccess('Package created.');
       setShowForm(false);
       setName('');
       setSlug('');
@@ -82,17 +86,28 @@ export default function AdminPackages() {
       setDescription('');
       setFeatures('');
       load();
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to create package'));
     } finally {
       setSaving(false);
     }
   };
 
   const toggleActive = async (pkg: AdminPackageRow) => {
-    if (pkg.active) await mockApi.adminDeletePackage(pkg.id);
-    else await mockApi.adminUpdatePackage(pkg.id, { active: true });
-    load();
-    if (selectedId === pkg.id) {
-      mockApi.adminPackageDetail(pkg.id).then((res) => setDetail(res as PackageDetail));
+    try {
+      if (pkg.active) {
+        await mockApi.adminDeletePackage(pkg.id);
+        notifySuccess('Package deactivated.');
+      } else {
+        await mockApi.adminUpdatePackage(pkg.id, { active: true });
+        notifySuccess('Package activated.');
+      }
+      load();
+      if (selectedId === pkg.id) {
+        mockApi.adminPackageDetail(pkg.id).then((res) => setDetail(res as PackageDetail));
+      }
+    } catch (err) {
+      notifyError(getErrorMessage(err, 'Failed to update package'));
     }
   };
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { formatNaira } from '../../lib/utils';
 import type { HirerPlan, PlanEntitlements, CompanySubscription } from '../../types';
@@ -9,14 +11,13 @@ import { Badge, Button, PageHeader, Spinner } from '../../components/ui';
 
 export default function HirerBilling() {
   const { user } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const [plans, setPlans] = useState<HirerPlan[]>([]);
   const [subscription, setSubscription] = useState<CompanySubscription | null>(null);
   const [entitlements, setEntitlements] = useState<PlanEntitlements | null>(null);
   const [openJobs, setOpenJobs] = useState(0);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState(false);
-  const [message, setMessage] = useState('');
-
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -41,13 +42,12 @@ export default function HirerBilling() {
   const onUpgrade = async () => {
     if (!user) return;
     setUpgrading(true);
-    setMessage('');
     try {
       await mockApi.upgradeSubscription(user.id);
-      setMessage('Upgraded to Premium (mock payment).');
+      notifySuccess('Upgraded to Premium (mock payment).');
       await load();
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Upgrade failed');
+      notifyError(getErrorMessage(err, 'Upgrade failed'));
     } finally {
       setUpgrading(false);
     }
@@ -86,7 +86,6 @@ export default function HirerBilling() {
               : `Preview (first ${entitlements.applicantPreviewLimit})`}
           </li>
         </ul>
-        {message && <p className="mt-4 text-sm text-primary">{message}</p>}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

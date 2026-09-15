@@ -1,10 +1,13 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNotify } from '../../context/NotificationContext';
+import { getErrorMessage } from '../../lib/errors';
 import { mockApi } from '../../lib/mockApi';
 import { Button, Card, Input, PageHeader, Spinner, Textarea } from '../../components/ui';
 
 export default function SeekerProfile() {
   const { user, setUser } = useAuth();
+  const { notifySuccess, notifyError } = useNotify();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -18,8 +21,6 @@ export default function SeekerProfile() {
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,13 +44,12 @@ export default function SeekerProfile() {
   const onAvatarFile = async (file: File | null) => {
     if (!file || !user) return;
     setUploadingAvatar(true);
-    setError('');
     try {
       const res = await mockApi.uploadImage(file);
       setAvatarUrl(res.file.url);
-      setMessage('Photo uploaded — save profile to keep it.');
+      notifySuccess('Photo uploaded — save profile to keep it.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Photo upload failed');
+      notifyError(getErrorMessage(err, 'Photo upload failed'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -58,14 +58,13 @@ export default function SeekerProfile() {
   const onResumeFile = async (file: File | null) => {
     if (!file || !user) return;
     setUploadingResume(true);
-    setError('');
     try {
       const res = await mockApi.uploadDocument(file);
       setResumeUrl(res.file.url);
       setResumeName(file.name);
-      setMessage('CV uploaded — save profile to keep it.');
+      notifySuccess('CV uploaded — save profile to keep it.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CV upload failed');
+      notifyError(getErrorMessage(err, 'CV upload failed'));
     } finally {
       setUploadingResume(false);
     }
@@ -75,8 +74,6 @@ export default function SeekerProfile() {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    setMessage('');
-    setError('');
     try {
       const res = await mockApi.updateSeekerProfile(user.id, {
         name,
@@ -95,9 +92,9 @@ export default function SeekerProfile() {
         },
       });
       setUser(res.user);
-      setMessage('Profile updated successfully.');
+      notifySuccess('Profile updated successfully.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed');
+      notifyError(getErrorMessage(err, 'Save failed'));
     } finally {
       setSaving(false);
     }
@@ -187,8 +184,6 @@ export default function SeekerProfile() {
           />
         </Card>
 
-        {message && <p className="text-sm text-emerald-700">{message}</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" disabled={saving || uploadingAvatar || uploadingResume}>
           {saving ? 'Saving…' : 'Save profile'}
         </Button>

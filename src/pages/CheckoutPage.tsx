@@ -4,11 +4,14 @@ import type { CvPackage } from '../types';
 import { mockApi } from '../lib/mockApi';
 import { formatNaira } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useNotify } from '../context/NotificationContext';
+import { getErrorMessage } from '../lib/errors';
 import { Button, Input, Spinner, Textarea } from '../components/ui';
 
 export default function CheckoutPage() {
   const { packageId } = useParams<{ packageId: string }>();
   const { user } = useAuth();
+  const { notifyError } = useNotify();
   const navigate = useNavigate();
   const [pkg, setPkg] = useState<CvPackage | null>(null);
   const [notes, setNotes] = useState('');
@@ -16,7 +19,6 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!packageId) return;
@@ -34,11 +36,10 @@ export default function CheckoutPage() {
       return;
     }
     if (user.role !== 'seeker') {
-      setError('Only job seekers can order CV packages in this demo.');
+      notifyError('Only job seekers can order CV packages in this demo.');
       return;
     }
     setSubmitting(true);
-    setError('');
     try {
       await mockApi.createOrder(user.id, pkg!.id, {
         notes,
@@ -47,7 +48,7 @@ export default function CheckoutPage() {
       });
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Checkout failed');
+      notifyError(getErrorMessage(err, 'Checkout failed'));
     } finally {
       setSubmitting(false);
     }
@@ -136,7 +137,6 @@ export default function CheckoutPage() {
           <Input label="Expiry" placeholder="12/28" defaultValue="12/28" />
           <Input label="CVC" placeholder="123" defaultValue="123" />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" className="w-full" disabled={submitting}>
           {submitting ? 'Processing…' : `Pay ${formatNaira(pkg.price)} (mock)`}
         </Button>
